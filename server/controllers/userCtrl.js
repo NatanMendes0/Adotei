@@ -5,6 +5,10 @@ const User = require('../models/userModel');
 const asyncHandler = require('express-async-handler');
 const validateMongoDbID = require('../utils/validadeMongoDbId');
 
+// chamar funções de autenticação (gerar token e atualizar token)
+const { generateToken } = require('../config/jwtToken');
+const { generateRefreshToken } = require('../config/refreshToken');
+
 // criar um usuário
 const createUser = asyncHandler(async (req, res) => {
     const email = req.body.email;
@@ -62,13 +66,27 @@ const loginUser = asyncHandler(async (req, res) => {
         }
         // verifica se a senha está correta
         if (await findUser.isPasswordMatched(password)) {
+            // se a senha estiver correta, reseta a quantidade de tentativas de login
+            await User.findByIdAndUpdate(findUser._id, { loginAttempts: 0 });
+
+            // se a senha estiver correta, gera um refreshToken de autenticação
+            const refreshToken = await generateRefreshToken(findUser.id);
+            await User.findByIdAndUpdate(findUser._id, { refreshToken: refreshToken }, { new: true });
+
+            // gera um cookie com o refreshToken
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                maxAge: 5 * 60 * 60 * 1000,
+            });
+
             // retorna um json com os dados do usuário
             res.status(200).json({
-                _id: findUser._id,
-                name: findUser.name,
-                email: findUser.email,
-                establishmentId: findUser.establishmentId,
-                role: findUser.role,
+                _id: findUser?._id,
+                name: findUser?.name,
+                email: findUser?.email,
+                establishmentId: findUser?.establishmentId,
+                role: findUser?.role,
+                token: generateToken(findUser?._id),
             });
         }
         // se a senha estiver incorreta, atualiza no banco a quantidade de tentativas de login
