@@ -5,27 +5,39 @@ const express = require('express');
 const router = express.Router();
 
 // chamar controladores
-const { createUser, getUser, getUsers, loginUser, editUser } = require('../controllers/userCtrl');
+const { 
+    createUser, 
+    getUser, 
+    getUsers, 
+    loginUser, 
+    editUser, 
+    deleteUser,
+} = require('../controllers/userCtrl');
 
 // chamar middleware que verifica a autenticação 
 // TODO: arrumar problema de verificação de token na rota 
 // const { authMiddleware } = require('../middleware/authMiddleware');
 
-// rota para criar um usuário
+// TODO: TRADUZIR ROTAS
+
+// criar um usuário
 router.post('/register', createUser);
 
-// rota para puxar um usuário
-// TODO: adicionar após resolver problema com token router.get('/:id', authMiddleware, getUser);
+// puxar um usuário
+// TODO: adicionar após resolver problema com token -> router.get('/:id', authMiddleware, getUser);
 router.get('/:id', getUser);
 
-// rota para puxar todos os usuários
+// puxar todos os usuários
 router.get('/', getUsers);
 
-// rota para o login 
+// login 
 router.post('/login', loginUser);
 
-// rota para atualizar o token
+// atualizar usuário
 router.put('/edit-user/:id', editUser);
+
+// excluir usuario
+router.delete('/delete-user/:id', deleteUser);
 
 // exportar o roteador
 module.exports = router;

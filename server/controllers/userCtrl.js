@@ -136,5 +136,27 @@ const editUser = asyncHandler(async (req, res) => {
     }
 });
 
+// excluir um usuário
+const deleteUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "Não é possível excluir. Usuário não encontrado!" });
+        }
+        await User.findByIdAndDelete(id);
+        return res.status(200).json({ message: "Usuário excluído da plataforma!" });
+    } catch {
+        return res.status(404).json({ message: "Não é possível excluir. Usuário não encontrado!" });
+    }
+});
+
 // exportar controladores
-module.exports = { createUser, getUser, getUsers, loginUser, editUser };
+module.exports = {
+    createUser,
+    getUser,
+    getUsers,
+    loginUser,
+    editUser,
+    deleteUser,
+};
