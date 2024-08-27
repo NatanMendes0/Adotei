@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const generateRefreshToken = (id) => {
   const refreshToken = jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "5h",
+    expiresIn: process.env.JWT_EXPIRES_IN,
   });
   return refreshToken;
 };

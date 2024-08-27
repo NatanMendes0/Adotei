@@ -8,6 +8,7 @@ const validateMongoDbID = require('../utils/validadeMongoDbId');
 // chamar funções de autenticação (gerar token e atualizar token)
 const { generateToken } = require('../config/jwtToken');
 const { generateRefreshToken } = require('../config/refreshToken');
+const { json } = require('body-parser');
 
 // criar um usuário
 const createUser = asyncHandler(async (req, res) => {
@@ -107,5 +108,33 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 });
 
+// editar um usuário
+const editUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "Não é possível editar. Usuário não encontrado!" });
+        }
+        // atualizar propriedades de usuário baseado na requisição
+        user.name = req.body.name || user.name;
+        user.email = req.body.email || user.email;
+        user.establishmentId = req.body.establishmentId || user.establishmentId;
+        user.role = req.body.role || user.role;
+        await user.save();
+
+        return res.status(200).json({
+            message: "Usuário editado com sucesso!",
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            establishmentId: user.establishmentId,
+            role: user.role,
+        });
+    } catch {
+        return res.status(404).json({ message: "Não é possível editar. Usuário não encontrado!" });
+    }
+});
+
 // exportar controladores
-module.exports = { createUser, getUser, getUsers, loginUser };
+module.exports = { createUser, getUser, getUsers, loginUser, editUser };
