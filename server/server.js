@@ -26,7 +26,7 @@ app.use(bodyParser.json());
 const authRouter = require('./routes/authRouter');
 
 // chamar as rotas
-app.use('/api/user', authRouter);
+app.use('/api/usuarios', authRouter);
 
 // inicialização do servidor na porta 5000
 const PORT = process.env.PORT || 5000;

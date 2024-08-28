@@ -14,17 +14,16 @@ const {
     deleteUser,
 } = require('../controllers/userCtrl');
 
-// chamar middleware que verifica a autenticação 
 // TODO: arrumar problema de verificação de token na rota 
+// chamar middleware que verifica a autenticação 
 // const { authMiddleware } = require('../middleware/authMiddleware');
 
-// TODO: TRADUZIR ROTAS
 
 // criar um usuário
-router.post('/register', createUser);
+router.post('/cadastro', createUser);
 
 // puxar um usuário
-// TODO: adicionar após resolver problema com token -> router.get('/:id', authMiddleware, getUser);
+// router.get('/:id', authMiddleware, getUser);
 router.get('/:id', getUser);
 
 // puxar todos os usuários
@@ -34,10 +33,10 @@ router.get('/', getUsers);
 router.post('/login', loginUser);
 
 // atualizar usuário
-router.put('/edit-user/:id', editUser);
+router.put('/editar-usuario/:id', editUser);
 
 // excluir usuario
-router.delete('/delete-user/:id', deleteUser);
+router.delete('/deletar-usuario/:id', deleteUser);
 
 // exportar o roteador
 module.exports = router;
