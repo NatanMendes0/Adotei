@@ -1,15 +1,13 @@
 // chamar dependências
 const express = require('express');
 
-// inicialização do roteador
-const router = express.Router();
-
 // chamar controladores
 const { 
     createUser, 
     getUser, 
     getUsers, 
-    loginUser, 
+    login, 
+    logout,
     editUser, 
     deleteUser,
 } = require('../controllers/userCtrl');
@@ -17,9 +15,14 @@ const {
 // chamar middleware que verifica a autenticação 
 const { authMiddleware, isOriginalUser } = require('../middleware/authMiddleware');
 
+// inicialização do roteador
+const router = express.Router();
 
 // criar um usuário
 router.post('/cadastro', createUser);
+
+// logout 
+router.get('/logout', logout);
 
 // puxar um usuário
 router.get('/:id', authMiddleware, getUser);
@@ -29,13 +32,15 @@ router.get('/:id', authMiddleware, getUser);
 router.get('/', getUsers);
 
 // login 
-router.post('/login', loginUser);
+router.post('/login', login);
 
 // atualizar usuário
 router.put('/editar-usuario/:id', authMiddleware, isOriginalUser, editUser);
 
 // excluir usuario
 router.delete('/deletar-usuario/:id', authMiddleware, isOriginalUser, deleteUser);
+
+//TODO: rota de esqueceu a senha
 
 // exportar o roteador
 module.exports = router;

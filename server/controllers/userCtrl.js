@@ -3,12 +3,10 @@ const User = require('../models/userModel');
 
 // chamar dependências
 const asyncHandler = require('express-async-handler');
-const validateMongoDbID = require('../utils/validadeMongoDbId');
 
 // chamar funções de autenticação (gerar token e atualizar token)
 const { generateToken } = require('../config/jwtToken');
 const { generateRefreshToken } = require('../config/refreshToken');
-const { json } = require('body-parser');
 
 // criar um usuário
 const createUser = asyncHandler(async (req, res) => {
@@ -25,7 +23,6 @@ const createUser = asyncHandler(async (req, res) => {
 // puxar um único usuário
 const getUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    validateMongoDbID(id);
     try {
         const getUser = await User.findById(id);
         res.status(200).json({
@@ -53,9 +50,9 @@ const getUsers = asyncHandler(async (req, res) => {
         })),
     });
 });
+const login = asyncHandler(async (req, res) => {
 
-// realizar o login do usuário
-const loginUser = asyncHandler(async (req, res) => {
+    // realizar o login do usuário
     const { email, password } = req.body;
 
     //verifica se o usuário existe
@@ -151,12 +148,36 @@ const deleteUser = asyncHandler(async (req, res) => {
     }
 });
 
+// realizar o logout
+const logout = asyncHandler(async (req, res) => {
+    try {
+        // verifica se o refreshToken existe no cabeçalho de cookies
+        if (req.cookies && req.cookies.refreshToken) {
+            res.clearCookie("refreshToken", {
+                httpOnly: true,
+                secure: true,
+            });
+        }
+        // se o refreshToken não existir, verifica se o token existe no cabeçalho de cookies
+        else if (req.cookies && req.cookies.token) {
+            res.clearCookie("token", {
+                httpOnly: true,
+                secure: true,
+            });
+        }
+        res.status(200).json({ message: "Logout realizado com sucesso!" });
+    } catch (error) {
+        res.status(500).json({ message: "Erro ao fazer logout!" });
+    }
+});
+
 // exportar controladores
 module.exports = {
     createUser,
+    login,
     getUser,
     getUsers,
-    loginUser,
     editUser,
     deleteUser,
+    logout,
 };
