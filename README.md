@@ -50,5 +50,5 @@ Este projeto tem dois principais **objetivos**:
 
 | [Maria Antonia Carpes Bastos](https://www.linkedin.com/in/maria-antonia-carpes-bastos-052560269/) | [Natan da Cruz Mendes](https://www.linkedin.com/in/natancruzmendes/) |
 |---------------------|--------------------------|
-| ![maria.jpeg](./assetsForReadme/maria.jpeg) | ![natan.jpeg](./assetsForReadme/natan.jpeg) |
+| ![maria.jpeg](./assetsForReadme/maria.jpeg) | ![natan.JPEG](./assetsForReadme/natan.JPEG) |
 | *Designer* | *Desenvolvedor* |
