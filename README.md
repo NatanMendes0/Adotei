@@ -43,3 +43,10 @@ Este projeto tem dois principais **objetivos**:
 | Arquitetura da Aplicação | Modelagem do Banco de Dados |
 |--------------------------|-----------------------------|
 | ![arquitetura da aplicação.png](./assetsForReadme/arquitetura_da_aplicacao.png) | ![modelagem do banco de dados.png](./assetsForReadme/modelagem_do_banco_de_dados.png) |
+
+## Autores 👥
+
+| [Maria Antonia Carpes Bastos](https://www.linkedin.com/in/maria-antonia-carpes-bastos-052560269/) | [Natan da Cruz Mendes](https://www.linkedin.com/in/natancruzmendes/) |
+|---------------------|--------------------------|
+| ![maria.jpeg](./assetsForReadme/maria.jpeg) | ![natan.jpeg](./assetsForReadme/natan.jpeg) |
+| *Designer* | *Desenvolvedor* |
