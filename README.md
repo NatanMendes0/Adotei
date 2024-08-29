@@ -9,6 +9,8 @@
 
 ***Adotei*** é uma plataforma web voltada para ONGs de **defesa animal** criarem seu cadastro, postarem seus serviços e animais que possuem para adoção, como uma forma de **informar a população** próxima. Além disso, os usuários podem **agendar serviços** desejados ou **demonstrar interesse em adotar** um animal de uma das ONGs. 🏡
 
+***O Projeto ainda está em desenvolvimento! Portanto, novas informações e fotos das telas da plataforma serão adicionadas em breve!*** 🚧
+
 ## Objetivo 🎯
 
 Este projeto tem dois principais **objetivos**:
