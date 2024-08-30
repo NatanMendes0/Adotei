@@ -1,12 +1,17 @@
 // chamar model de usuário
 const User = require('../models/userModel');
+const PasswordReset = require('../models/passwordResetModel');
 
 // chamar dependências
 const asyncHandler = require('express-async-handler');
+const { v4: uuidv4, validate: uuidValidate, v4 } = require("uuid");
+const nodemailer = require('nodemailer');
 
 // chamar funções de autenticação (gerar token e atualizar token)
 const { generateToken } = require('../config/jwtToken');
 const { generateRefreshToken } = require('../config/refreshToken');
+
+/* FUNÇÕES DE CONTROLE DE USUÁRIO */
 
 // criar um usuário
 const createUser = asyncHandler(async (req, res) => {
@@ -171,6 +176,97 @@ const logout = asyncHandler(async (req, res) => {
     }
 });
 
+// esqueceu a senha - gera um token de recuperação de senha
+const generateForgotPasswordToken = asyncHandler(async (req, res) => {
+
+    // puxar o email do corpo da requisição e verificar se o usuário existe no banco
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    // se o usuário não existir, retorna um json
+    if (!user) {
+        return res.status(404).json({ message: "E-mail não encontrado!" });
+    }
+
+    // se o usuário existir, gera um token de recuperação de senha
+    const request = await PasswordReset.findOne({ userId: user._id });
+
+    if (request) {
+        await PasswordReset.findByIdAndDelete(request._id);
+    }
+
+    let uuid = uuidv4();
+
+    await PasswordReset.create({
+        userId: user._id,
+        token: uuid,
+    });
+
+    // define o transporte de e-mail
+    let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            type: 'OAuth2',
+            user: process.env.MAIL,
+            pass: process.env.MAIL_PASSWORD,
+            clientId: process.env.OAUTH_CLIENT_ID,
+            clientSecret: process.env.OAUTH_CLIENT_SECRET,
+            refreshToken: process.env.OAUTH_REFRESH_TOKEN
+        },
+    });
+    
+    //TODO - criar um arquivo html com o corpo do e-mail
+    // define as opções de e-mail
+    let mailOptions = {
+        from: process.env.EMAIL,
+        // to: user.email,
+        to: "natancmendes@gmail.com",
+        subject: 'Recuperação de Senha',
+        text: `Olá ${user.name}! Para recuperar sua senha, clique no link a seguir: ${process.env.CLIENT_URL}/esqueceu-senha/${uuid}`,
+    };
+    
+    // envia um e-mail com o token de recuperação de senha
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            return res.status(500).json({ message: "Erro ao enviar e-mail!" });
+        } else {
+            return res.status(200).json({ message: "E-mail enviado com sucesso!" });
+        }
+    });
+
+});
+
+// esqueceu a senha - confirma o token de recuperação de senha e atualiza para uma nova senha
+const resetPassword = asyncHandler(async (req, res) => {
+    // puxar o token e senha da requisição
+    const { token } = req.params;
+    const { password } = req.body;
+
+    // verifica se o token gerado é válido pelo uuid
+    if (!uuidValidate(token)) {
+        return res.status(404).json({ message: "Token inválido!" });
+    }
+
+    // verifica se o token existe no banco
+    const request = await PasswordReset.findOne({ token });
+
+    // se o token não existir, retorna um json
+    if (!request) {
+        return res.status(404).json({ message: "Token não encontrado!" });
+    }
+
+    // se o token existir, atualiza a senha do usuário
+    try {
+        // atualiza a senha do usuário
+        const user = await User.findById(request.userId);
+        user.password = password;
+        await user.save();
+        return res.status(200).json({ message: "Senha atualizada com sucesso!" });
+    } catch {
+        return res.status(404).json({ message: "Não foi possível atualizar a senha!" });
+    }
+});
+
 // exportar controladores
 module.exports = {
     createUser,
@@ -180,4 +276,6 @@ module.exports = {
     editUser,
     deleteUser,
     logout,
+    generateForgotPasswordToken,
+    resetPassword,
 };

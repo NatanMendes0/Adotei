@@ -8,6 +8,8 @@ const {
     getUsers, 
     login, 
     logout,
+    generateForgotPasswordToken,
+    resetPassword,
     editUser, 
     deleteUser,
 } = require('../controllers/userCtrl');
@@ -24,6 +26,12 @@ router.post('/cadastro', createUser);
 // logout 
 router.get('/logout', logout);
 
+// solicitar mudança de senha
+router.post('/esqueceu-senha', generateForgotPasswordToken);
+
+// mudar senha após confirmação de email
+router.post('/esqueceu-senha/:token', resetPassword);
+
 // puxar um usuário
 router.get('/:id', authMiddleware, getUser);
 
@@ -39,8 +47,6 @@ router.put('/editar-usuario/:id', authMiddleware, isOriginalUser, editUser);
 
 // excluir usuario
 router.delete('/deletar-usuario/:id', authMiddleware, isOriginalUser, deleteUser);
-
-//TODO: rota de esqueceu a senha
 
 // exportar o roteador
 module.exports = router;
