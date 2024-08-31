@@ -11,6 +11,9 @@ const nodemailer = require('nodemailer');
 const { generateToken } = require('../config/jwtToken');
 const { generateRefreshToken } = require('../config/refreshToken');
 
+// chamar função de verificação de token (controller "esqueceu a senha")
+const { handlePasswordReset } = require('../utils/emailTransporter');
+
 /* FUNÇÕES DE CONTROLE DE USUÁRIO */
 
 // criar um usuário
@@ -178,7 +181,7 @@ const logout = asyncHandler(async (req, res) => {
 
 // esqueceu a senha - gera um token de recuperação de senha
 const generateForgotPasswordToken = asyncHandler(async (req, res) => {
-
+    /*
     // puxar o email do corpo da requisição e verificar se o usuário existe no banco
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -233,6 +236,21 @@ const generateForgotPasswordToken = asyncHandler(async (req, res) => {
             return res.status(200).json({ message: "E-mail enviado com sucesso!" });
         }
     });
+
+    */
+
+
+    // puxar o email do corpo da requisição e verificar se o usuário existe no banco
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    // se o usuário não existir, retorna um json
+    if (!user) {
+        return res.status(404).json({ message: "E-mail não encontrado!" });
+    }
+
+    // se o usuário existir, chama a função handlePasswordReset
+    await handlePasswordReset(user, res);
 
 });
 
