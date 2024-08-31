@@ -36,11 +36,12 @@ const handlePasswordReset = async (user, res) => {
         },
     });
 
+    //TODO - criar um arquivo html com o corpo do e-mail
     // Definir as opções de e-mail
     let mailOptions = {
         from: process.env.EMAIL, 
-        to: "natancmendes@gmail.com", 
         // to: user.email,
+        to: "natancmendes@gmail.com",
         subject: 'Recuperação de Senha',
         text: `Olá ${user.name}! Para recuperar sua senha, clique no link a seguir: ${process.env.CLIENT_URL}/esqueceu-senha/${uuid}`,
     };

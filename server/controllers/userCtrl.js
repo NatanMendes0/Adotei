@@ -181,64 +181,6 @@ const logout = asyncHandler(async (req, res) => {
 
 // esqueceu a senha - gera um token de recuperação de senha
 const generateForgotPasswordToken = asyncHandler(async (req, res) => {
-    /*
-    // puxar o email do corpo da requisição e verificar se o usuário existe no banco
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-
-    // se o usuário não existir, retorna um json
-    if (!user) {
-        return res.status(404).json({ message: "E-mail não encontrado!" });
-    }
-
-    // se o usuário existir, gera um token de recuperação de senha
-    const request = await PasswordReset.findOne({ userId: user._id });
-
-    if (request) {
-        await PasswordReset.findByIdAndDelete(request._id);
-    }
-
-    let uuid = uuidv4();
-
-    await PasswordReset.create({
-        userId: user._id,
-        token: uuid,
-    });
-
-    // define o transporte de e-mail
-    let transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            type: 'OAuth2',
-            user: process.env.MAIL,
-            pass: process.env.MAIL_PASSWORD,
-            clientId: process.env.OAUTH_CLIENT_ID,
-            clientSecret: process.env.OAUTH_CLIENT_SECRET,
-            refreshToken: process.env.OAUTH_REFRESH_TOKEN
-        },
-    });
-    
-    //TODO - criar um arquivo html com o corpo do e-mail
-    // define as opções de e-mail
-    let mailOptions = {
-        from: process.env.EMAIL,
-        // to: user.email,
-        to: "natancmendes@gmail.com",
-        subject: 'Recuperação de Senha',
-        text: `Olá ${user.name}! Para recuperar sua senha, clique no link a seguir: ${process.env.CLIENT_URL}/esqueceu-senha/${uuid}`,
-    };
-    
-    // envia um e-mail com o token de recuperação de senha
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            return res.status(500).json({ message: "Erro ao enviar e-mail!" });
-        } else {
-            return res.status(200).json({ message: "E-mail enviado com sucesso!" });
-        }
-    });
-
-    */
-
 
     // puxar o email do corpo da requisição e verificar se o usuário existe no banco
     const { email } = req.body;
