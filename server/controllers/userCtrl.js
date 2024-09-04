@@ -58,6 +58,8 @@ const getUsers = asyncHandler(async (req, res) => {
         })),
     });
 });
+
+// realizar o login
 const login = asyncHandler(async (req, res) => {
 
     // realizar o login do usuário
