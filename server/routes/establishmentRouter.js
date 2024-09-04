@@ -3,11 +3,8 @@ const express = require('express');
 
 // chamar controladores
 const { 
-    createEstablishment, 
-    // getEstablishment, 
-    // getEstablishments, 
-    // editEstablishment, 
-    // deleteEstablishment,
+    createEstablishment,
+    addEmployeeByEmail,
 } = require('../controllers/establishmentCtrl');
 
 // chamar middleware que verifica a autenticação
@@ -19,5 +16,7 @@ const router = express.Router();
 // criar um estabelecimento
 router.post('/cadastro', authMiddleware, createEstablishment);
 
+// adicionar um funcionário
+router.post('/add-funcionario', authMiddleware, addEmployeeByEmail);
 // exportar o roteador
 module.exports = router;

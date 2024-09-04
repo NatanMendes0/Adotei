@@ -12,7 +12,11 @@ var establishmentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    address: [{
+    ownerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    address: {
         cep: {
             type: String,
             required: true,
@@ -41,7 +45,33 @@ var establishmentSchema = new mongoose.Schema({
             type: String,
             required: true,
         },
-    }]
+    },
+    employees: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
+    animals: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Animal',
+    }],
+    services: [{
+        name: {
+            type: String,
+            required: true,
+        },
+        description: {
+            type: String,
+            required: true,
+        },
+        isAvailable: {
+            type: Boolean,
+            required: true,
+        },
+        usersInterested: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        }],
+    }],
 });
 
 // exportar o modelo de estabelecimento
