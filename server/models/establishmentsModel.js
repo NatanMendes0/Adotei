@@ -74,5 +74,18 @@ var establishmentSchema = new mongoose.Schema({
     }],
 });
 
+// Criar um índice de texto que inclui os campos relevantes para facilitar a busca de algum conteúdo
+establishmentSchema.index({
+    name: 'text',
+    description: 'text',
+    'address.cep': 'text',
+    'address.patio': 'text',
+    'address.neighborhood': 'text',
+    'address.city': 'text',
+    'address.state': 'text',
+    'services.name': 'text',
+    'services.description': 'text'
+});
+
 // exportar o modelo de estabelecimento
 module.exports = mongoose.model('Establishment', establishmentSchema);

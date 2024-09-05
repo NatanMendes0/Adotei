@@ -73,7 +73,7 @@ const addEmployeeByEmail = asyncHandler(async (req, res) => {
     // campos do corpo da requisição
     const { email } = req.body;
     const { establishmentId } = req.body;
-    
+
     // buscar usuário pelo email
     const employee = await User.findOne({ email });
 
@@ -100,8 +100,41 @@ const addEmployeeByEmail = asyncHandler(async (req, res) => {
     }
 });
 
+// listar todos os estabelecimentos
+const getEstablishments = asyncHandler(async (req, res) => {
+    const establishments = await Establishment.find({});
+    res.status(200).json(establishments);
+});
+
+// listar todos os estabelecimentos que contenham um determinado texto em qualquer campo
+const getEstablishmentsByText = asyncHandler(async (req, res) => {
+    const { text } = req.params;
+
+    // Busca usando o operador $or para buscar o texto em vários campos
+    const establishments = await Establishment.find({
+        $or: [
+            { name: { $regex: text, $options: 'i' } },
+            { description: { $regex: text, $options: 'i' } },
+            { 'address.cep': { $regex: text, $options: 'i' } },
+            { 'address.patio': { $regex: text, $options: 'i' } },
+            { 'address.complement': { $regex: text, $options: 'i' } },
+            { 'address.neighborhood': { $regex: text, $options: 'i' } },
+            { 'address.city': { $regex: text, $options: 'i' } },
+            { 'address.state': { $regex: text, $options: 'i' } },
+            { 'services.name': { $regex: text, $options: 'i' } },
+            { 'services.description': { $regex: text, $options: 'i' } }
+        ]
+    });
+
+    res.status(200).json(establishments);
+});
+
+
+
 // exportar funções de controle de estabelecimento
 module.exports = {
     createEstablishment,
     addEmployeeByEmail,
+    getEstablishments,
+    getEstablishmentsByText,
 };
