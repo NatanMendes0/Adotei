@@ -3,12 +3,13 @@ const express = require('express');
 
 // chamar controladores
 const { 
-    addEmployeeByEmail,
+    addEmployeeById,
     createEstablishment,
     getEstablishmentById,
     getEstablishments,
     getEstablishmentsByOwner,
     getEstablishmentsByText,
+    removeEmployeeById,
 } = require('../controllers/establishmentCtrl');
 
 // chamar middleware que verifica a autenticação
@@ -33,7 +34,10 @@ router.get('/meus-estabelecimentos/:id', authMiddleware, getEstablishmentsByOwne
 router.post('/cadastro', authMiddleware, createEstablishment);
 
 // adicionar um funcionário
-router.post('/add-funcionario', authMiddleware, addEmployeeByEmail);
+router.post('/add-funcionario/:establishmentId/:employeeId', authMiddleware, addEmployeeById);
+
+// remover um funcionário
+router.delete('/remove-funcionario/:establishmentId/:employeeId', authMiddleware, removeEmployeeById);
 
 // exportar o roteador
 module.exports = router;

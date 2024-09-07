@@ -89,15 +89,13 @@ const getEstablishmentsByOwner = asyncHandler(async (req, res) => {
     }
 });
 
-// adicionar funcionários pelo seu email
-const addEmployeeByEmail = asyncHandler(async (req, res) => {
+// adicionar funcionários em um estabelecimento pelo id do estabelecimento + id do usuário
+const addEmployeeById = asyncHandler(async (req, res) => {
+    console.log(req.params);
+    const { establishmentId, employeeId } = req.params;
 
-    // campos do corpo da requisição
-    const { email } = req.body;
-    const { establishmentId } = req.body;
-
-    // buscar usuário pelo email
-    const employee = await User.findOne({ email });
+    // buscar usuário pelo id
+    const employee = await User.findById(employeeId);
 
     // se o usuário não for encontrado, enviar mensagem de erro
     if (!employee) {
@@ -105,20 +103,32 @@ const addEmployeeByEmail = asyncHandler(async (req, res) => {
     }
 
     // se o usuário for encontrado, mas já for um funcionário, enviar mensagem de erro
-    if (Establishment.employees.includes(employee._id)) {
-        res.status(400).json({ message: 'Este usuário já é um funcionário' });
+    if (employee.establishment) {
+        res.status(400).json({ message: 'Usuário já é um funcionário' });
     }
 
     // enviar resposta
     try {
-
-        // adicionar funcionário
         const addEmployee = await Establishment.findByIdAndUpdate(
-            establishmentId, { $push: { employees: employee._id } }, { new: true }
+            establishmentId, { $push: { employees: employeeId } }, { new: true }
         );
         res.status(200).json({ message: 'Funcionário adicionado com sucesso', establishment: addEmployee });
     } catch (error) {
         res.status(400).json({ message: 'Erro ao adicionar funcionário', error });
+    }
+});
+
+//remover funcionarios pelo seu id + id do estabelecimento
+const removeEmployeeById = asyncHandler(async (req, res) => {
+    const { employeeId, establishmentId } = req.params;
+
+    try {
+        const removeEmployee = await Establishment.findByIdAndUpdate(
+            establishmentId, { $pull: { employees: employeeId } }, { new: true }
+        );
+        res.status(200).json({ message: 'Funcionário removido com sucesso', establishment: removeEmployee });
+    } catch (error) {
+        res.status(400).json({ message: 'Erro ao remover funcionário', error });
     }
 });
 
@@ -181,8 +191,9 @@ const getEstablishmentById = asyncHandler(async (req, res) => {
 module.exports = {
     createEstablishment,
     getEstablishmentsByOwner,
-    addEmployeeByEmail,
+    addEmployeeById,
     getEstablishmentById,
     getEstablishments,
     getEstablishmentsByText,
+    removeEmployeeById,
 };
