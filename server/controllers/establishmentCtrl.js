@@ -10,18 +10,16 @@ const asyncHandler = require('express-async-handler');
 // criar um estabelecimento
 const createEstablishment = asyncHandler(async (req, res) => {
 
-    // TODO: implementar função quando o usuário não sabe o CEP
-
     const { cep } = req.body;
 
     // se não houver cep, enviar mensagem de erro
     if (!cep) {
-        res.status(400).json({ message: 'CEP não informado' });
+        return res.status(400).json({ message: 'CEP não informado' });
     }
 
     // se o cep for informado incorretamente, enviar mensagem de erro
     if (cep.length !== 8) {
-        res.status(400).json({ message: 'CEP inválido, favor informar um CEP válido' });
+        return res.status(400).json({ message: 'CEP inválido, favor informar um CEP válido' });
     }
 
     // verificar cep via API ViaCEP
@@ -30,10 +28,21 @@ const createEstablishment = asyncHandler(async (req, res) => {
 
     // se o cep não for encontrado, enviar mensagem de erro
     if (cepData.erro) {
-        res.status(400).json({ message: 'CEP não encontrado' });
+        return res.status(400).json({ message: 'CEP não encontrado' });
     }
 
-    // campos do corpo da requisição
+    // Função para remover acentos de uma string
+    const removeAccents = (str) => {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    };
+
+    // Remover acentos dos campos do JSON recebido
+    cepData.logradouro = removeAccents(cepData.logradouro);
+    cepData.bairro = removeAccents(cepData.bairro);
+    cepData.localidade = removeAccents(cepData.localidade);
+    cepData.estado = removeAccents(cepData.uf);
+
+    // Campos do corpo da requisição
     const {
         name,
         description,
@@ -42,15 +51,15 @@ const createEstablishment = asyncHandler(async (req, res) => {
     } = req.body;
     const { _id } = req.user;
 
-    // enviar resposta
+    // Enviar resposta
     try {
-        // criar estabelecimento
+        // Criar estabelecimento
         const newEstablishment = await Establishment.create({
             name,
             description,
             ownerId: _id,
 
-            // modelo para quando a API ViaCEP estiver funcionando
+            // Inserir os dados da API ViaCEP sem acentos
             address: {
                 cep: cepData.cep,
                 patio: cepData.logradouro,
@@ -64,6 +73,19 @@ const createEstablishment = asyncHandler(async (req, res) => {
         res.status(201).json({ message: 'Estabelecimento criado com sucesso', establishment: newEstablishment });
     } catch (error) {
         res.status(400).json({ message: 'Erro ao criar estabelecimento', error });
+    }
+});
+
+// listar todos os estabelecimentos ao qual o dono é o usuário logado
+const getEstablishmentsByOwner = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+        const establishments = await Establishment
+            .find({ ownerId: id })
+            .populate('employees', 'name email');
+        res.status(200).json(establishments);
+    } catch (error) {
+        return res.status(404).json({ message: "Estabelecimentos não encontrados." });
     }
 });
 
@@ -110,31 +132,57 @@ const getEstablishments = asyncHandler(async (req, res) => {
 const getEstablishmentsByText = asyncHandler(async (req, res) => {
     const { text } = req.params;
 
-    // Busca usando o operador $or para buscar o texto em vários campos
+    // Normalizar o texto de busca para remover acentos
+    const normalizedText = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // Tenta converter o texto para número
+    const numberText = Number(normalizedText);
+
+    // Busca usando o operador $or para buscar o texto normalizado em vários campos
+    const queryConditions = [
+        { name: { $regex: normalizedText, $options: 'i' } },
+        { description: { $regex: normalizedText, $options: 'i' } },
+        { 'address.cep': { $regex: normalizedText, $options: 'i' } },
+        { 'address.patio': { $regex: normalizedText, $options: 'i' } },
+        { 'address.complement': { $regex: normalizedText, $options: 'i' } },
+        { 'address.neighborhood': { $regex: normalizedText, $options: 'i' } },
+        { 'address.city': { $regex: normalizedText, $options: 'i' } },
+        { 'address.state': { $regex: normalizedText, $options: 'i' } },
+        { 'services.name': { $regex: normalizedText, $options: 'i' } },
+        { 'services.description': { $regex: normalizedText, $options: 'i' } }
+    ];
+
+    // Se o texto for um número válido, adiciona a busca no campo address.number
+    if (!isNaN(numberText)) {
+        queryConditions.push({ 'address.number': numberText });
+    }
+
+    // Executa a busca com o operador $or
     const establishments = await Establishment.find({
-        $or: [
-            { name: { $regex: text, $options: 'i' } },
-            { description: { $regex: text, $options: 'i' } },
-            { 'address.cep': { $regex: text, $options: 'i' } },
-            { 'address.patio': { $regex: text, $options: 'i' } },
-            { 'address.complement': { $regex: text, $options: 'i' } },
-            { 'address.neighborhood': { $regex: text, $options: 'i' } },
-            { 'address.city': { $regex: text, $options: 'i' } },
-            { 'address.state': { $regex: text, $options: 'i' } },
-            { 'services.name': { $regex: text, $options: 'i' } },
-            { 'services.description': { $regex: text, $options: 'i' } }
-        ]
+        $or: queryConditions
     });
 
     res.status(200).json(establishments);
 });
 
-
+// listar pelo id
+const getEstablishmentById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    console.log(id);
+    try {
+        const getEstablishment = await Establishment.findById(id);
+        res.status(200).json(getEstablishment);
+    } catch (error) {
+        return res.status(404).json({ message: "Estabelecimento não encontrado." });
+    }
+});
 
 // exportar funções de controle de estabelecimento
 module.exports = {
     createEstablishment,
+    getEstablishmentsByOwner,
     addEmployeeByEmail,
+    getEstablishmentById,
     getEstablishments,
     getEstablishmentsByText,
 };
