@@ -10,6 +10,7 @@ const {
     getEstablishmentsByOwner,
     getEstablishmentsByText,
     removeEmployeeById,
+    getEmployeesByEstablishment,
 } = require('../controllers/establishmentCtrl');
 
 // chamar middleware que verifica a autenticação
@@ -37,7 +38,10 @@ router.post('/cadastro', authMiddleware, createEstablishment);
 router.post('/add-funcionario/:establishmentId/:employeeId', authMiddleware, addEmployeeById);
 
 // remover um funcionário
-router.delete('/remove-funcionario/:establishmentId/:employeeId', authMiddleware, removeEmployeeById);
+router.delete('/remover-funcionario/:establishmentId/:employeeId', authMiddleware, removeEmployeeById);
+
+// listar funcionários de um estabelecimento
+router.get('/funcionarios/:id', getEmployeesByEstablishment);
 
 // exportar o roteador
 module.exports = router;

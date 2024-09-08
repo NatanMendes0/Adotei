@@ -178,12 +178,24 @@ const getEstablishmentsByText = asyncHandler(async (req, res) => {
 // listar pelo id
 const getEstablishmentById = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    console.log(id);
     try {
         const getEstablishment = await Establishment.findById(id);
         res.status(200).json(getEstablishment);
     } catch (error) {
         return res.status(404).json({ message: "Estabelecimento não encontrado." });
+    }
+});
+
+// listar todos os funcionários de um estabelecimento
+const getEmployeesByEstablishment = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+        const employees = await Establishment
+            .findById(id)
+            .populate('employees', 'name email');
+        res.status(200).json(employees.employees);
+    } catch (error) {
+        return res.status(404).json({ message: "Funcionários não encontrados." });
     }
 });
 
@@ -196,4 +208,5 @@ module.exports = {
     getEstablishments,
     getEstablishmentsByText,
     removeEmployeeById,
+    getEmployeesByEstablishment,
 };
