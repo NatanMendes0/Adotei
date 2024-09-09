@@ -1,12 +1,13 @@
 // chamar models
 const User = require('../models/userModel');
+const Establishment = require('../models/establishmentsModel');
 
 // chamar dependências
 const jwt = require('jsonwebtoken');
 const assyncHandler = require('express-async-handler');
 
 // importar a função verifyToken do utils
-const {verifyToken} = require('../utils/authUtils');
+const { verifyToken } = require('../utils/authUtils');
 
 // Função que verifica se o usuário está logado via cookies
 const authMiddleware = assyncHandler(async (req, res, next) => {
@@ -59,4 +60,7 @@ const isOriginalUser = assyncHandler(async (req, res, next) => {
     next();
 });
 
-module.exports = { authMiddleware, isOriginalUser };
+module.exports = {
+    authMiddleware,
+    isOriginalUser,
+};

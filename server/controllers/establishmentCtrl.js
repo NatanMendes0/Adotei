@@ -199,6 +199,107 @@ const getEmployeesByEstablishment = asyncHandler(async (req, res) => {
     }
 });
 
+//atualizar informações do estabelecimento
+const updateEstablishment = asyncHandler(async (req, res) => {
+    // id do estabelecimento
+    const { id } = req.params;
+
+    // enviar cep para a ViaCep para obter informações do endereço
+    const { cep } = req.body;
+
+    // se o cep for informado, buscar informações do endereço, senão, atualizar normalmente
+    if (cep) {
+        const findCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const cepData = await findCep.json();
+
+        // se o cep não for encontrado, enviar mensagem de erro
+        if (cepData.erro) {
+            return res.status(400).json({ message: 'CEP não encontrado' });
+        }
+
+        // Função para remover acentos de uma string
+        const removeAccents = (str) => {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        };
+
+        // Remover acentos dos campos do JSON recebido
+        cepData.logradouro = removeAccents(cepData.logradouro);
+        cepData.bairro = removeAccents(cepData.bairro);
+        cepData.localidade = removeAccents(cepData.localidade);
+        cepData.estado = removeAccents(cepData.uf);
+
+
+        // campos do corpo da requisição
+        const { 
+            name, 
+            description, 
+            address: { 
+                patio,
+                complement,
+                number, 
+                neighborhood, 
+                city, 
+                state 
+            }, 
+            services } = req.body;
+
+        // enviar resposta
+        try {
+            const updateEstablishment = await Establishment.findByIdAndUpdate(id, {
+                name,
+                description,
+                address: {
+                    cep: cepData.cep,
+                    patio: cepData.logradouro,
+                    complement,
+                    number,
+                    neighborhood: cepData.bairro,
+                    city: cepData.localidade,
+                    state: cepData.estado
+                },
+                services
+            });
+            res.status(200).json({ message: 'Estabelecimento atualizado com sucesso', establishment: updateEstablishment });
+        } catch (error) {
+            res.status(400).json({ message: 'Erro ao atualizar estabelecimento', error });
+        }
+    } else {
+        // campos do corpo da requisição
+        const { name, description, address: { patio, complement, number, neighborhood, city, state }, services } = req.body;
+
+        // enviar resposta
+        try {
+            const updateEstablishment = await Establishment.findByIdAndUpdate(id, {
+                name,
+                description,
+                address: {
+                    patio,
+                    complement,
+                    number,
+                    neighborhood,
+                    city,
+                    state
+                },
+                services
+            });
+            res.status(200).json({ message: 'Estabelecimento atualizado com sucesso', establishment: updateEstablishment });
+        } catch (error) {
+            res.status(400).json({ message: 'Erro ao atualizar estabelecimento', error });
+        }
+    }
+});
+
+// excluir estabelecimento
+const deleteEstablishment = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deleteEstablishment = await Establishment.findByIdAndDelete(id);
+        res.status(200).json({ message: 'Estabelecimento excluído com sucesso', establishment: deleteEstablishment });
+    } catch (error) {
+        res.status(400).json({ message: 'Erro ao excluir estabelecimento', error });
+    }
+})
+
 // exportar funções de controle de estabelecimento
 module.exports = {
     createEstablishment,
@@ -209,4 +310,6 @@ module.exports = {
     getEstablishmentsByText,
     removeEmployeeById,
     getEmployeesByEstablishment,
+    updateEstablishment,
+    deleteEstablishment
 };

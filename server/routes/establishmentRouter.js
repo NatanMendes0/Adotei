@@ -11,6 +11,8 @@ const {
     getEstablishmentsByText,
     removeEmployeeById,
     getEmployeesByEstablishment,
+    updateEstablishment,
+    deleteEstablishment
 } = require('../controllers/establishmentCtrl');
 
 // chamar middleware que verifica a autenticação
@@ -42,6 +44,12 @@ router.delete('/remover-funcionario/:establishmentId/:employeeId', authMiddlewar
 
 // listar funcionários de um estabelecimento
 router.get('/funcionarios/:id', getEmployeesByEstablishment);
+
+// atualizar informações do estabelecimento pelo id
+router.patch('/:id', authMiddleware, updateEstablishment);
+
+// deletar um estabelecimento pelo id
+router.delete('/:id', authMiddleware, deleteEstablishment);
 
 // exportar o roteador
 module.exports = router;
