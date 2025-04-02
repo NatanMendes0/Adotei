@@ -9,6 +9,7 @@ import OngsPage from "./pages/OngsPage";
 import PetDetailsPage from "./pages/PetDetailsPage";
 import PetsPage from "./pages/PetsPage";
 import ServiceDetailsPage from "./pages/ServiceDetailsPage";
+import ServiceSchedulePage from "./pages/ServiceSchedulePage";
 import ServicosPage from "./pages/ServicosPage";
 import SobrePage from "./pages/SobrePage";
 
@@ -26,6 +27,10 @@ function App() {
           <Route path="/ongs" element={<OngsPage />} />
           <Route path="/servicos" element={<ServicosPage />} />
           <Route path="/servicos/:id" element={<ServiceDetailsPage />} />
+          <Route
+            path="/servicos/:id/agendar"
+            element={<ServiceSchedulePage />}
+          />
           <Route path="/sobre" element={<SobrePage />} />
           <Route path="*" element={<NotFound />} />
         </Route>

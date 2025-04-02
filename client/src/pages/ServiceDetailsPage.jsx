@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 // Dados mockados para exemplo
 const mockServices = [
@@ -46,6 +46,7 @@ const mockServices = [
 
 const ServiceDetailsPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const service = mockServices.find((s) => s.id === parseInt(id));
 
   if (!service) {
@@ -215,7 +216,10 @@ const ServiceDetailsPage = () => {
               </div>
 
               <div className="mt-8">
-                <button className="w-full bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors">
+                <button
+                  onClick={() => navigate(`/servicos/${id}/agendar`)}
+                  className="w-full bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors"
+                >
                   Agendar Serviço
                 </button>
               </div>
