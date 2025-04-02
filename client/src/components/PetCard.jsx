@@ -1,3 +1,5 @@
+import { HeartIcon } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
@@ -11,7 +13,7 @@ import ConfirmationModal from "./ConfirmationModal";
 const PetCard = ({ pet }) => {
   const [favorite, setFavorite] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { updateFavorites } = useFavorites();
+  const { updateFavorites, toggleFavorite } = useFavorites();
 
   useEffect(() => {
     setFavorite(isFavorite(pet.id));
@@ -37,50 +39,47 @@ const PetCard = ({ pet }) => {
   return (
     <>
       <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-        <div className="relative">
-          <img
-            src={pet.image}
-            alt={pet.name}
-            className="w-full h-72 object-cover"
-          />
-          <div className="absolute top-4 left-4">
-            <span className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-700 shadow-sm">
-              {pet.age}
-            </span>
-          </div>
-          <div className="absolute top-4 right-4">
-            <button
-              onClick={handleFavoriteClick}
-              className={`bg-white p-2 rounded-full shadow-md transition-colors ${
-                favorite ? "hover:bg-red-50" : "hover:bg-gray-50"
-              }`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`h-5 w-5 ${
-                  favorite ? "text-red-500" : "text-gray-600 hover:text-red-500"
+        <Link to={`/pets/${pet.id}`}>
+          <div className="relative">
+            <img
+              src={pet.image}
+              alt={pet.name}
+              className="w-full h-72 object-cover"
+            />
+            <div className="absolute top-4 left-4">
+              <span className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                {pet.age}
+              </span>
+            </div>
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleFavorite(pet);
+                }}
+                className={`bg-white p-2 rounded-full shadow-md transition-colors ${
+                  favorite ? "hover:bg-red-50" : "hover:bg-gray-50"
                 }`}
-                fill={favorite ? "currentColor" : "none"}
-                viewBox="0 0 24 24"
-                stroke="currentColor"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-            </button>
+                {favorite ? (
+                  <HeartIconSolid className="h-6 w-6 text-red-500" />
+                ) : (
+                  <HeartIcon className="h-6 w-6 text-gray-600 hover:text-red-500" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
+        </Link>
 
         <div className="p-6">
           <div className="flex justify-between items-start mb-3">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">
+              <Link
+                to={`/pets/${pet.id}`}
+                className="text-xl font-semibold text-gray-900 hover:text-teal-600 transition-colors"
+              >
                 {pet.name}
-              </h3>
+              </Link>
               <p className="text-sm text-gray-600">{pet.breed}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
