@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { useFavorites } from "../contexts/FavoritesContext";
 
 const Layout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { favorites } = useFavorites();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -64,12 +66,14 @@ const Layout = () => {
             <div className="hidden lg:flex items-center space-x-4">
               <Link
                 to="/favoritos"
-                className="text-gray-600 hover:text-teal-600 flex items-center"
+                className={`text-gray-600 hover:text-teal-600 flex items-center ${
+                  location.pathname === "/favoritos" ? "text-teal-600" : ""
+                }`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-1"
-                  fill="none"
+                  fill={favorites.length > 0 ? "currentColor" : "none"}
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
@@ -80,7 +84,9 @@ const Layout = () => {
                     d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                   />
                 </svg>
-                <span className="text-sm font-medium">Favoritos</span>
+                <span className="text-sm font-medium">
+                  Favoritos {favorites.length > 0 && `(${favorites.length})`}
+                </span>
               </Link>
               <Link
                 to="/entrar"
@@ -178,13 +184,15 @@ const Layout = () => {
                 <div className="pt-4 border-t border-gray-200">
                   <Link
                     to="/favoritos"
-                    className="text-gray-600 hover:text-teal-600 flex items-center mb-4"
+                    className={`text-gray-600 hover:text-teal-600 flex items-center mb-4 ${
+                      location.pathname === "/favoritos" ? "text-teal-600" : ""
+                    }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5 mr-1"
-                      fill="none"
+                      fill={favorites.length > 0 ? "currentColor" : "none"}
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
@@ -195,7 +203,10 @@ const Layout = () => {
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                       />
                     </svg>
-                    <span className="text-sm font-medium">Favoritos</span>
+                    <span className="text-sm font-medium">
+                      Favoritos{" "}
+                      {favorites.length > 0 && `(${favorites.length})`}
+                    </span>
                   </Link>
                   <Link
                     to="/entrar"
