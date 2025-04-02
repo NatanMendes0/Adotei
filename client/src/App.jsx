@@ -3,6 +3,7 @@ import Layout from "./components/Layout";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
 import FavoritesPage from "./pages/FavoritesPage";
 import HomePage from "./pages/HomePage";
+import NotFound from "./pages/NotFound";
 import PetsPage from "./pages/PetsPage";
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/pets" element={<PetsPage />} />
           <Route path="/favoritos" element={<FavoritesPage />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </FavoritesProvider>

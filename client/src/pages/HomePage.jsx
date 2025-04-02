@@ -65,7 +65,8 @@ const HomePage = () => {
               Sou uma ONG
             </Link>
           </div>
-          <div className="mt-12 flex items-center gap-8">
+
+          {/* <div className="mt-12 flex items-center gap-8">
             <div className="flex flex-col">
               <span className="text-2xl font-bold text-gray-900">1.2k+</span>
               <span className="text-sm text-gray-600">Pets adotados</span>
@@ -82,7 +83,7 @@ const HomePage = () => {
                 Adoções bem-sucedidas
               </span>
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="md:w-1/2 md:pl-12">
           <div className="relative">

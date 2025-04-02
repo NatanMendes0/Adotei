@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
+import Footer from "./Footer";
 
 const Layout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -233,6 +234,9 @@ const Layout = () => {
       <main className="flex-grow">
         <Outlet />
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
