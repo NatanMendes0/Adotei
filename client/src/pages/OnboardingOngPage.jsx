@@ -21,27 +21,57 @@ const OnboardingOngPage = () => {
   const [hasSpecialHours, setHasSpecialHours] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [states, setStates] = useState([]);
 
-  // Simulação de estados e cidades (substituir por API real)
-  const states = [
-    { value: "SP", label: "São Paulo" },
-    { value: "RJ", label: "Rio de Janeiro" },
-    { value: "MG", label: "Minas Gerais" },
-    // ... outros estados
-  ];
-
+  // Carregar estados ao montar o componente
   useEffect(() => {
-    if (formData.state) {
-      // Simulação de busca de cidades (substituir por API real)
-      const mockCities = [
-        { value: "SAO", label: "São Paulo" },
-        { value: "CAMP", label: "Campinas" },
-        { value: "SANT", label: "Santos" },
-        // ... outras cidades
-      ];
-      setCities(mockCities);
+    console.log("useEffect iniciado");
+    const fetchStates = async () => {
+      try {
+        console.log("Iniciando busca de estados...");
+        const response = await fetch(
+          "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
+        );
+        console.log("Resposta recebida:", response);
+        const data = await response.json();
+        console.log("Dados recebidos:", data);
+        // Ordenar estados alfabeticamente
+        const sortedStates = data.sort((a, b) => a.nome.localeCompare(b.nome));
+        console.log("Estados ordenados:", sortedStates);
+        setStates(sortedStates);
+      } catch (error) {
+        console.error("Erro ao carregar estados:", error);
+      }
+    };
+
+    fetchStates();
+  }, []);
+
+  // Carregar cidades quando um estado for selecionado
+  const handleStateChange = async (e) => {
+    const stateId = e.target.value;
+    console.log("Estado selecionado:", stateId);
+    setFormData({ ...formData, state: stateId, city: "" });
+    setCities([]);
+
+    if (stateId) {
+      try {
+        console.log("Iniciando busca de cidades para o estado:", stateId);
+        const response = await fetch(
+          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateId}/municipios`
+        );
+        console.log("Resposta de cidades recebida:", response);
+        const data = await response.json();
+        console.log("Dados de cidades recebidos:", data);
+        // Ordenar cidades alfabeticamente
+        const sortedCities = data.sort((a, b) => a.nome.localeCompare(b.nome));
+        console.log("Cidades ordenadas:", sortedCities);
+        setCities(sortedCities);
+      } catch (error) {
+        console.error("Erro ao carregar cidades:", error);
+      }
     }
-  }, [formData.state]);
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -62,10 +92,56 @@ const OnboardingOngPage = () => {
     const newDays = formData.workingDays.includes(day)
       ? formData.workingDays.filter((d) => d !== day)
       : [...formData.workingDays, day];
+
+    // Atualiza os dias de trabalho
     setFormData({ ...formData, workingDays: newDays });
   };
 
+  const handleSpecialHoursCheckboxChange = (e) => {
+    const checked = e.target.checked;
+
+    // Só permite marcar se houver pelo menos um dia selecionado no horário normal
+    if (checked && formData.workingDays.length === 0) {
+      setError(
+        "Selecione pelo menos um dia no horário normal antes de adicionar horários especiais"
+      );
+      return;
+    }
+
+    setHasSpecialHours(checked);
+
+    // Se desmarcar, limpa todos os horários especiais
+    if (!checked) {
+      setFormData({
+        ...formData,
+        specialHours: [],
+      });
+    }
+  };
+
   const handleSpecialHoursAdd = () => {
+    // Verifica se há horários especiais sem dias selecionados
+    const hasEmptySpecialHours = formData.specialHours.some(
+      (special) => special.days.length === 0
+    );
+
+    if (hasEmptySpecialHours) {
+      setError(
+        "Preencha os dias do horário especial atual antes de adicionar um novo"
+      );
+      return;
+    }
+
+    // Verifica se há dias disponíveis
+    const availableDays = getAvailableDays();
+
+    if (availableDays.length === 0) {
+      setError(
+        "Não há mais dias disponíveis para adicionar horários especiais"
+      );
+      return;
+    }
+
     setFormData({
       ...formData,
       specialHours: [
@@ -96,6 +172,22 @@ const OnboardingOngPage = () => {
     return formData.specialHours.some((special) => special.days.includes(day));
   };
 
+  const getAvailableDays = () => {
+    return ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].filter(
+      (day) => !isDaySelected(day)
+    );
+  };
+
+  const shouldRemoveSpecialHour = (specialHour) => {
+    // Se não tem dias selecionados e todos os dias estão desabilitados
+    return (
+      specialHour.days.length === 0 &&
+      ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].every(
+        (day) => isDaySelected(day) && !specialHour.days.includes(day)
+      )
+    );
+  };
+
   const handleSpecialDayToggle = (index, day) => {
     // Se o dia já está selecionado em outro horário, não permite selecionar
     if (
@@ -112,6 +204,7 @@ const OnboardingOngPage = () => {
         ? newSpecialHours[index].days.filter((d) => d !== day)
         : [...newSpecialHours[index].days, day],
     };
+
     setFormData({ ...formData, specialHours: newSpecialHours });
   };
 
@@ -195,15 +288,13 @@ const OnboardingOngPage = () => {
         </label>
         <select
           value={formData.state}
-          onChange={(e) =>
-            setFormData({ ...formData, state: e.target.value, city: "" })
-          }
+          onChange={handleStateChange}
           className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
         >
           <option value="">Selecione um estado</option>
           {states.map((state) => (
-            <option key={state.value} value={state.value}>
-              {state.label}
+            <option key={state.id} value={state.id}>
+              {state.nome}
             </option>
           ))}
         </select>
@@ -221,8 +312,8 @@ const OnboardingOngPage = () => {
         >
           <option value="">Selecione uma cidade</option>
           {cities.map((city) => (
-            <option key={city.value} value={city.value}>
-              {city.label}
+            <option key={city.id} value={city.nome}>
+              {city.nome}
             </option>
           ))}
         </select>
@@ -327,14 +418,28 @@ const OnboardingOngPage = () => {
           type="checkbox"
           id="specialHours"
           checked={hasSpecialHours}
-          onChange={(e) => setHasSpecialHours(e.target.checked)}
-          className="h-5 w-5 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+          onChange={handleSpecialHoursCheckboxChange}
+          disabled={formData.workingDays.length === 0}
+          className={`h-5 w-5 text-teal-600 focus:ring-teal-500 border-gray-300 rounded ${
+            formData.workingDays.length === 0
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
         />
         <label
           htmlFor="specialHours"
-          className="text-lg font-medium text-gray-700"
+          className={`text-lg font-medium ${
+            formData.workingDays.length === 0
+              ? "text-gray-400"
+              : "text-gray-700"
+          }`}
         >
           Horários diferentes em alguns dias
+          {formData.workingDays.length === 0 && (
+            <span className="block text-sm text-gray-500">
+              Selecione pelo menos um dia no horário normal
+            </span>
+          )}
         </label>
       </div>
 
@@ -420,9 +525,16 @@ const OnboardingOngPage = () => {
           <button
             type="button"
             onClick={handleSpecialHoursAdd}
-            className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+            disabled={getAvailableDays().length === 0}
+            className={`w-full px-4 py-2 rounded-lg transition-colors ${
+              getAvailableDays().length === 0
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-teal-600 text-white hover:bg-teal-700"
+            }`}
           >
-            Adicionar Horário Especial
+            {getAvailableDays().length === 0
+              ? "Não há mais dias disponíveis"
+              : "Adicionar Horário Especial"}
           </button>
         </div>
       )}
