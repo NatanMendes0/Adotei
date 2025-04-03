@@ -2,18 +2,18 @@ import { Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
-import CadastroOngPage from "./pages/CadastroOngPage";
+import OnboardingOngPage from "./ong/onboarding/OnboardingOngPage";
+import CadastroOngPage from "./pages/cadastro-ong/CadastroOngPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import HomePage from "./pages/HomePage";
-import NotFound from "./pages/NotFound";
-import OnboardingOngPage from "./pages/OnboardingOngPage";
-import OngsPage from "./pages/OngsPage";
-import PetDetailsPage from "./pages/PetDetailsPage";
+import NotFound from "./pages/not-found/NotFound";
+import OngsPage from "./pages/para-ongs/OngsPage";
+import PetDetailsPage from "./pages/pets/:id/PetDetailsPage";
 import PetsPage from "./pages/PetsPage";
-import ServiceDetailsPage from "./pages/ServiceDetailsPage";
 import ServiceSchedulePage from "./pages/ServiceSchedulePage";
+import ServiceDetailsPage from "./pages/servicos/:id/ServiceDetailsPage";
 import ServicosPage from "./pages/ServicosPage";
-import SobrePage from "./pages/SobrePage";
+import SobrePage from "./pages/sobre/SobrePage";
 
 function App() {
   return (
