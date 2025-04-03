@@ -9,6 +9,7 @@ import {
   startOfMonth,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -87,6 +88,8 @@ const ServiceSchedulePage = () => {
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setUnavailableDates(
@@ -126,6 +129,9 @@ const ServiceSchedulePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
     try {
       console.log("Dados do agendamento:", {
         serviceId: id,
@@ -134,7 +140,7 @@ const ServiceSchedulePage = () => {
         ...formData,
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       setShowSuccessModal(true);
 
@@ -142,7 +148,9 @@ const ServiceSchedulePage = () => {
         navigate("/");
       }, 7000);
     } catch (error) {
-      console.error("Erro ao criar agendamento:", error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -306,13 +314,45 @@ const ServiceSchedulePage = () => {
               >
                 Voltar
               </button>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="submit"
-                disabled={!selectedDate || !selectedTime}
-                className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={isLoading}
+                className={`bg-teal-600 text-white px-6 py-2 rounded-lg text-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl ${
+                  isLoading
+                    ? "opacity-75 cursor-not-allowed"
+                    : "hover:bg-teal-700"
+                }`}
               >
-                Confirmar Agendamento
-              </button>
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Agendando...
+                  </div>
+                ) : (
+                  "Agendar Serviço"
+                )}
+              </motion.button>
             </div>
           </div>
         );
