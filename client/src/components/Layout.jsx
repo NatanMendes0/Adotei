@@ -90,16 +90,10 @@ const Layout = () => {
                 </span>
               </Link>
               <Link
-                to="/entrar"
-                className="text-teal-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-teal-600 hover:text-white transition-colors text-sm font-medium"
+                to="/cadastro-ong"
+                className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
               >
-                Entrar
-              </Link>
-              <Link
-                to="/cadastrar"
-                className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-white hover:text-teal-600 hover:border hover:border-teal-600 transition-colors text-sm font-medium"
-              >
-                Cadastrar
+                Cadastrar ONG
               </Link>
             </div>
 
@@ -210,18 +204,11 @@ const Layout = () => {
                     </span>
                   </Link>
                   <Link
-                    to="/entrar"
-                    className="block w-full text-center text-teal-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-teal-600 hover:text-white transition-colors text-sm font-medium mb-4"
+                    to="/cadastro-ong"
+                    className="block w-full text-center bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Entrar
-                  </Link>
-                  <Link
-                    to="/cadastrar"
-                    className="block w-full text-center bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-white hover:text-teal-600 hover:border hover:border-teal-600 transition-colors text-sm font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Cadastrar
+                    Cadastrar ONG
                   </Link>
                 </div>
               </nav>

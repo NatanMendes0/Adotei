@@ -24,7 +24,7 @@ const OngsPage = () => {
           </p>
           <div className="mt-10">
             <Link
-              to="/ongs/cadastrar"
+              to="/cadastro-ong"
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-teal-600 bg-white hover:bg-teal-50"
             >
               Cadastrar ONG
@@ -163,7 +163,7 @@ const OngsPage = () => {
           <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <div className="inline-flex rounded-md shadow">
               <Link
-                to="/ongs/cadastrar"
+                to="/cadastro-ong"
                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700"
               >
                 Começar Agora
