@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import PageHeader from "../components/PageHeader";
-import PetCard from "../components/PetCard";
-import { filterOptions } from "../data/filterOptions";
-import { pets } from "../data/pets";
+import PageHeader from "../../components/PageHeader";
+import PetCard from "../../components/PetCard";
+import { filterOptions } from "../../data/filterOptions";
+import { pets } from "../../data/pets";
 
 const PetsPage = () => {
   const [showFilters, setShowFilters] = useState(false);

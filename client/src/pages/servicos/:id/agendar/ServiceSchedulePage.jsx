@@ -12,8 +12,11 @@ import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ConfirmationModal from "../components/ConfirmationModal";
-import { petInfoFields, tutorInfoFields } from "../constants/formFields";
+import ConfirmationModal from "../../../../components/ConfirmationModal";
+import {
+  petInfoFields,
+  tutorInfoFields,
+} from "../../../../constants/formFields";
 
 const mockService = {
   id: 1,
