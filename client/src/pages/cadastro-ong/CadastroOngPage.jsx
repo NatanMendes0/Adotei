@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authService } from "../../services/api";
 
 const CadastroOngPage = () => {
   const navigate = useNavigate();
@@ -18,29 +19,13 @@ const CadastroOngPage = () => {
     setError("");
 
     try {
-      // Simular chamada à API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      const response = await fetch("/api/usuarios/cadastro", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          role: "ONG",
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Erro ao cadastrar ONG");
-      }
-
+      await authService.registerOng(formData);
       navigate("/ongs/onboarding");
     } catch (error) {
-      setError(error.message);
+      setError(
+        error.response?.data?.message ||
+          "Erro ao cadastrar ONG. Tente novamente."
+      );
     } finally {
       setIsLoading(false);
     }

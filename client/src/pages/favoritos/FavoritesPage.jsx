@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import PageHeader from "../components/PageHeader";
-import PetCard from "../components/PetCard";
-import { useFavorites } from "../contexts/FavoritesContext";
-import { pets } from "../data/pets";
+import PageHeader from "../../components/PageHeader";
+import PetCard from "../../components/PetCard";
+import { useFavorites } from "../../contexts/FavoritesContext";
+import { pets } from "../../data/pets";
 
 const FavoritesPage = () => {
   const [favoritePets, setFavoritePets] = useState([]);

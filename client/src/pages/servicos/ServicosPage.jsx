@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ServiceCard from "../components/ServiceCard";
+import ServiceCard from "../../components/ServiceCard";
 
 // Dados mockados para exemplo
 const mockServices = [
