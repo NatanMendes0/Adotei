@@ -1,11 +1,12 @@
 require("dotenv").config();
 
 // chamar dependências
-const express = require('express');
+const express = require("express");
 const dbConnect = require("./config/dbConnect");
-const cookieParser = require('cookie-parser');
-const helmet = require('helmet');
-const bodyParser = require('body-parser');
+const cookieParser = require("cookie-parser");
+const helmet = require("helmet");
+const bodyParser = require("body-parser");
+const cors = require("cors");
 
 // conectar ao banco de dados
 dbConnect();
@@ -22,16 +23,26 @@ app.use(helmet());
 // middleware para aceitar requisições POST
 app.use(bodyParser.json());
 
+// Configuração do CORS
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 // importação das rotas
-const authRouter = require('./routes/authRouter');
-const establishmentRouter = require('./routes/establishmentRouter');
+const authRouter = require("./routes/authRouter");
+const establishmentRouter = require("./routes/establishmentRouter");
+const animalRouter = require("./routes/animalRouter");
 
 // chamar as rotas
-app.use('/api/usuarios', authRouter);
-app.use('/api/estabelecimentos', establishmentRouter);
+app.use("/api/usuarios", authRouter);
+app.use("/api/estabelecimentos", establishmentRouter);
+app.use("/api/animais", animalRouter);
 
 // inicialização do servidor na porta 5000
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Escutando na porta ${PORT}`);
+  console.log(`Escutando na porta ${PORT}`);
 });
