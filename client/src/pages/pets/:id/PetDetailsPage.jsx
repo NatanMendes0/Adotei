@@ -2,7 +2,7 @@ import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useFavorites } from "../contexts/FavoritesContext";
+import { useFavorites } from "../../../contexts/FavoritesContext";
 
 // Dados mockados para exemplo
 const mockPets = [
