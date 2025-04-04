@@ -2,7 +2,7 @@
 
 # **Projeto “*Adotei!*” - Plataforma web para auxiliar ONGs de defesa animal". 🐾**
 
-> *Projeto desenvolvido em conjunto com a [@Maria Antonia](https://www.linkedin.com/in/maria-antonia-carpes-bastos-052560269/), tecnóloga em design gráfico!*
+> *Projeto desenvolvido em conjunto com a [@Maria Antonia](https://www.linkedin.com/in/maria-antonia-carpes-bastos-052560269/), tecnóloga em design gráfico. Juntamente de [@Andrey Fialho](https://www.linkedin.com/in/andreyfialho/), tecnólogo em análise e desenvolvimento de sistemas!*
 > 
 
 ## Sobre o projeto 🐶🐱
