@@ -48,7 +48,7 @@ Este projeto tem dois principais **objetivos**:
 
 ## Autores 👥
 
-| [Maria Antonia Carpes Bastos 🔗](https://www.linkedin.com/in/maria-antonia-carpes-bastos-052560269/) | [Natan da Cruz Mendes 🔗](https://www.linkedin.com/in/natancruzmendes/) | [Andrey Fialho 🔗](https://www.linkedin.com/in/andreyfialho/) |
+| [Maria Antonia 🔗](https://www.linkedin.com/in/maria-antonia-carpes-bastos-052560269/) | [Natan Mendes 🔗](https://www.linkedin.com/in/natancruzmendes/) | [Andrey Fialho 🔗](https://www.linkedin.com/in/andreyfialho/) |
 |---------------------|--------------------------|--------------------------|
 | <img src="./assetsForReadme/maria.jpeg" alt="Maria" width="150"/> | <img src="./assetsForReadme/natan.JPEG" alt="Natan" width="150"/> | <img src="./assetsForReadme/andrey.jfif" alt="Andrey" width="150"/> |
 | *Designer* | *Desenvolvedor* | *Desenvolvedor* |
