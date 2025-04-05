@@ -26,7 +26,7 @@ app.use(bodyParser.json());
 // Configuração do CORS
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "https://adotei.andreybernardoni.tech",
     credentials: true,
   })
 );
@@ -40,6 +40,12 @@ const animalRouter = require("./routes/animalRouter");
 app.use("/api/usuarios", authRouter);
 app.use("/api/estabelecimentos", establishmentRouter);
 app.use("/api/animais", animalRouter);
+
+//test api
+app.get("/api/ping", (req, res) => {
+  //não retornar em json, apenas um pong
+  res.send("pong! :D");
+});
 
 // inicialização do servidor na porta 5000
 const PORT = process.env.PORT || 5000;
