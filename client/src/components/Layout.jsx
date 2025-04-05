@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import logo from "../assets/logo.svg";
 import { useFavorites } from "../contexts/FavoritesContext";
 import Footer from "./Footer";
 
@@ -16,7 +17,11 @@ const Layout = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-teal-600">Adotei</span>
+              <img
+                src={logo}
+                alt="Adotei Logo"
+                className="h-10 w-40 md:h-12 md:w-48 lg:h-14 lg:w-56 text-teal-600"
+              />
             </Link>
 
             {/* Desktop Navigation */}
