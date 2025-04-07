@@ -81,6 +81,7 @@ const PetDetailsPage = () => {
   };
 
   const handleAdoptClick = () => {
+    console.log("Navegando para adoção do pet:", pet.id);
     navigate(`/adotar/${pet.id}`);
   };
 
