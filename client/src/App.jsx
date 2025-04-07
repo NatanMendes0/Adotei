@@ -11,10 +11,10 @@ import LoginPage from "./pages/login/LoginPage";
 import NotFound from "./pages/not-found/NotFound";
 import OnboardingOngPage from "./pages/onboarding/OnboardingOngPage";
 import OngsPage from "./pages/para-ongs/OngsPage";
-import PetDetailsPage from "./pages/pets/:id/PetDetailsPage";
+import PetDetailsPage from "./pages/pets/_id/PetDetailsPage";
 import PetsPage from "./pages/pets/PetsPage";
-import ServiceSchedulePage from "./pages/servicos/:id/agendar/ServiceSchedulePage";
-import ServiceDetailsPage from "./pages/servicos/:id/ServiceDetailsPage";
+import ServiceSchedulePage from "./pages/servicos/_id/agendar/ServiceSchedulePage";
+import ServiceDetailsPage from "./pages/servicos/_id/ServiceDetailsPage";
 import ServicosPage from "./pages/servicos/ServicosPage";
 import SobrePage from "./pages/sobre/SobrePage";
 
