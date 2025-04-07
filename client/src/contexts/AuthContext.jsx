@@ -13,11 +13,21 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem("@Adotei:token");
 
     if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+
+      // Verifica se o usuário completou o onboarding
+      if (!parsedUser.completedOnboarding) {
+        navigate("/ongs/onboarding");
+      }
     }
 
     setLoading(false);
-  }, []);
+  }, [navigate]);
+
+  const signIn = (userData) => {
+    setUser(userData);
+  };
 
   const signOut = () => {
     localStorage.removeItem("@Adotei:token");
@@ -32,6 +42,7 @@ export function AuthProvider({ children }) {
         signed: !!user,
         user,
         loading,
+        signIn,
         signOut,
       }}
     >

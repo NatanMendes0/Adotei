@@ -8,6 +8,7 @@ import OnboardingOngPage from "./ong/onboarding/OnboardingOngPage";
 import CadastroOngPage from "./pages/cadastro-ong/CadastroOngPage";
 import FavoritesPage from "./pages/favoritos/FavoritesPage";
 import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/login/LoginPage";
 import NotFound from "./pages/not-found/NotFound";
 import OngsPage from "./pages/para-ongs/OngsPage";
 import PetDetailsPage from "./pages/pets/:id/PetDetailsPage";
@@ -46,6 +47,7 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route path="login" element={<LoginPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

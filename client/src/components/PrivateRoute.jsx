@@ -1,22 +1,31 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import LoadingSpinner from "./LoadingSpinner";
 
-function PrivateRoute({ children }) {
-  const { signed, loading } = useAuth();
+const PrivateRoute = ({ children }) => {
+  const { user, isLoading } = useAuth();
+  const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
-      </div>
-    );
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
 
-  if (!signed) {
-    return <Navigate to="/cadastro-ong" />;
+  if (!user) {
+    // Redireciona para a página de login, salvando a rota atual
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Se o usuário não completou o onboarding e não está na página de onboarding
+  if (!user.completedOnboarding && location.pathname !== "/ongs/onboarding") {
+    return <Navigate to="/ongs/onboarding" replace />;
+  }
+
+  // Se o usuário completou o onboarding e está tentando acessar a página de onboarding
+  if (user.completedOnboarding && location.pathname === "/ongs/onboarding") {
+    return <Navigate to="/" replace />;
   }
 
   return children;
-}
+};
 
 export default PrivateRoute;

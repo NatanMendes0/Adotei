@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import { authService } from "../../services/api";
 
 const CadastroOngPage = () => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -19,11 +21,20 @@ const CadastroOngPage = () => {
     setError("");
 
     try {
-      await authService.registerOng(formData);
-      navigate("/ongs/onboarding");
+      const result = await authService.registerOng(formData);
+
+      if (result.success) {
+        signIn(result.data);
+
+        // Redireciona para o onboarding
+        navigate("/ongs/onboarding");
+      } else {
+        setError(result.message);
+      }
     } catch (error) {
+      console.log(error);
       setError(
-        error.response?.data?.message ||
+        error.response?.data?.uiMessage ||
           "Erro ao cadastrar ONG. Tente novamente."
       );
     } finally {
@@ -103,7 +114,7 @@ const CadastroOngPage = () => {
                     value={formData.email}
                     onChange={handleChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
-                    placeholder="seu@email.com"
+                    placeholder="Digite o e-mail da sua ONG"
                     disabled={isLoading}
                   />
                 </div>
@@ -181,6 +192,17 @@ const CadastroOngPage = () => {
                 )}
               </motion.button>
             </form>
+            <div className="mt-6 text-center">
+              <p className="text-gray-600">
+                Já tem uma conta?{" "}
+                <Link
+                  to="/login"
+                  className="text-teal-600 hover:text-teal-700 font-medium"
+                >
+                  Faça login
+                </Link>
+              </p>
+            </div>
           </motion.div>
 
           {/* Lado direito - Benefícios */}

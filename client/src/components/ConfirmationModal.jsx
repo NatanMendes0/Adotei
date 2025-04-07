@@ -8,12 +8,14 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
         <p className="text-gray-600 mb-6">{message}</p>
         <div className="flex justify-end gap-4">
           <button
+            type="button"
             onClick={onClose}
             className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
           >
             Cancelar
           </button>
           <button
+            type="button"
             onClick={onConfirm}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
           >

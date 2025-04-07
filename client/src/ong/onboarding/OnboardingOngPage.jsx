@@ -1,15 +1,24 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import api from "../../services/api";
 
 const OnboardingOngPage = () => {
   const navigate = useNavigate();
+  const { updateUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     profileImage: null,
+    croppedImage: null, // Imagem recortada final
+    cep: "",
     state: "",
     city: "",
     address: "",
+    number: "",
+    complement: "",
     workingDays: [],
     workingHours: {
       start: "09:00",
@@ -22,6 +31,136 @@ const OnboardingOngPage = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [states, setStates] = useState([]);
+
+  // Estados para o modal de recorte
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [tempImage, setTempImage] = useState(null);
+  const [crop, setCrop] = useState();
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const imgRef = useRef(null);
+
+  // Função para criar um crop circular inicial
+  function onImageLoad(e) {
+    const { width, height } = e.currentTarget;
+
+    // Criar um crop circular inicial
+    const crop = makeAspectCrop(
+      {
+        unit: "%",
+        width: 100,
+        height: 100,
+        x: 0,
+        y: 0,
+      },
+      1, // Aspect ratio 1:1 para círculo
+      width,
+      height
+    );
+
+    // Centralizar o crop
+    const centeredCrop = centerCrop(crop, width, height);
+    setCrop(centeredCrop);
+  }
+
+  // Função para recortar a imagem
+  const getCroppedImg = (image, crop) => {
+    const canvas = document.createElement("canvas");
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+    const ctx = canvas.getContext("2d");
+
+    // Desenhar a imagem recortada
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    );
+
+    // Criar um círculo para recortar a imagem
+    const circleCanvas = document.createElement("canvas");
+    circleCanvas.width = crop.width;
+    circleCanvas.height = crop.height;
+    const circleCtx = circleCanvas.getContext("2d");
+
+    // Desenhar o círculo
+    circleCtx.beginPath();
+    circleCtx.arc(
+      crop.width / 2,
+      crop.height / 2,
+      crop.width / 2,
+      0,
+      Math.PI * 2
+    );
+    circleCtx.closePath();
+    circleCtx.clip();
+
+    // Desenhar a imagem recortada dentro do círculo
+    circleCtx.drawImage(canvas, 0, 0);
+
+    return new Promise((resolve) => {
+      circleCanvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            console.error("Canvas is empty");
+            return;
+          }
+          blob.name = "cropped.png";
+          const croppedImageUrl = URL.createObjectURL(blob);
+          resolve(croppedImageUrl);
+        },
+        "image/png",
+        1
+      );
+    });
+  };
+
+  // Função para lidar com o upload da imagem
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Criar URL temporária para a imagem
+      const imageUrl = URL.createObjectURL(file);
+      setTempImage(imageUrl);
+      setShowCropModal(true);
+    }
+  };
+
+  // Função para confirmar o recorte
+  const handleCropConfirm = async () => {
+    if (imgRef.current && completedCrop) {
+      try {
+        const croppedImageUrl = await getCroppedImg(
+          imgRef.current,
+          completedCrop
+        );
+        setFormData({
+          ...formData,
+          profileImage: tempImage, // Manter a imagem original para referência
+          croppedImage: croppedImageUrl, // Salvar a imagem recortada
+        });
+        setShowCropModal(false);
+      } catch (error) {
+        console.error("Erro ao recortar imagem:", error);
+        setError("Erro ao recortar a imagem. Tente novamente.");
+      }
+    }
+  };
+
+  // Função para cancelar o recorte
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    setTempImage(null);
+    setCrop(null);
+    setCompletedCrop(null);
+  };
 
   // Carregar estados ao montar o componente
   useEffect(() => {
@@ -47,36 +186,77 @@ const OnboardingOngPage = () => {
     fetchStates();
   }, []);
 
-  // Carregar cidades quando um estado for selecionado
-  const handleStateChange = async (e) => {
-    const stateId = e.target.value;
-    console.log("Estado selecionado:", stateId);
-    setFormData({ ...formData, state: stateId, city: "" });
-    setCities([]);
-
-    if (stateId) {
+  // Função para buscar dados do CEP
+  const handleCepSearch = async (cep) => {
+    if (cep.length === 8) {
       try {
-        console.log("Iniciando busca de cidades para o estado:", stateId);
-        const response = await fetch(
-          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateId}/municipios`
-        );
-        console.log("Resposta de cidades recebida:", response);
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
-        console.log("Dados de cidades recebidos:", data);
-        // Ordenar cidades alfabeticamente
-        const sortedCities = data.sort((a, b) => a.nome.localeCompare(b.nome));
-        console.log("Cidades ordenadas:", sortedCities);
-        setCities(sortedCities);
+
+        if (!data.erro) {
+          // Encontrar o estado pelo UF
+          const state = states.find((s) => s.sigla === data.uf);
+
+          if (state?.id) {
+            // Primeiro setamos o estado para carregar as cidades
+            setFormData((prev) => ({
+              ...prev,
+              state: state.id,
+              address: data.logradouro || "",
+              complement: data.complemento || "",
+            }));
+
+            // Chamamos handleStateChange para carregar as cidades, passando a cidade do CEP
+            handleStateChange({ target: { value: state.id } }, data.localidade);
+          }
+        }
       } catch (error) {
-        console.error("Erro ao carregar cidades:", error);
+        console.error("Erro ao buscar CEP:", error);
+        setError("Erro ao buscar o CEP. Por favor, tente novamente.");
       }
     }
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData({ ...formData, profileImage: file });
+  // Função para lidar com a mudança do CEP
+  const handleCepChange = (e) => {
+    const cep = e.target.value.replace(/\D/g, "");
+    setFormData((prev) => ({ ...prev, cep }));
+    if (cep.length === 8) {
+      handleCepSearch(cep);
+    }
+  };
+
+  // Função para lidar com a mudança de estado
+  const handleStateChange = async (e, cityFromCep = null) => {
+    const stateId = e.target.value;
+    setFormData((prev) => ({ ...prev, state: stateId, city: "" }));
+    setCities([]);
+
+    if (stateId) {
+      try {
+        const response = await fetch(
+          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateId}/municipios`
+        );
+        const data = await response.json();
+        const sortedCities = data.sort((a, b) => a.nome.localeCompare(b.nome));
+        setCities(sortedCities);
+
+        // Se temos uma cidade do CEP, setamos ela agora
+        if (cityFromCep) {
+          // Encontramos a cidade exata na lista
+          const cityFound = sortedCities.find(
+            (city) => city.nome === cityFromCep
+          );
+          if (cityFound) {
+            setFormData((prev) => ({
+              ...prev,
+              city: cityFound.nome,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar cidades:", error);
+      }
     }
   };
 
@@ -221,13 +401,53 @@ const OnboardingOngPage = () => {
     setError("");
 
     try {
-      // Simular chamada à API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Preparar os dados para envio
+      const formDataToSend = new FormData();
 
-      // Implementar lógica de envio
+      // Adicionar a imagem de perfil se existir
+      if (formData.profileImage) {
+        formDataToSend.append("profileImage", formData.profileImage);
+      }
+
+      // Adicionar os outros dados
+      formDataToSend.append("state", formData.state);
+      formDataToSend.append("city", formData.city);
+      formDataToSend.append("address", formData.address);
+      formDataToSend.append("number", formData.number);
+      formDataToSend.append("complement", formData.complement);
+      formDataToSend.append(
+        "workingDays",
+        JSON.stringify(formData.workingDays)
+      );
+      formDataToSend.append(
+        "workingHours",
+        JSON.stringify(formData.workingHours)
+      );
+      formDataToSend.append(
+        "specialHours",
+        JSON.stringify(formData.specialHours)
+      );
+
+      // Enviar os dados para a API
+      const response = await api.patch("/api/ong/onboarding", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Atualizar o usuário no contexto
+      if (response.data && response.data.user) {
+        updateUser(response.data.user);
+      }
+
+      // Redirecionar para o dashboard
       navigate("/ongs/dashboard");
     } catch (error) {
-      setError(error.message);
+      console.error("Erro ao enviar dados do onboarding:", error);
+      setError(
+        error.response?.data?.message ||
+          "Erro ao salvar as informações. Por favor, tente novamente."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -238,7 +458,7 @@ const OnboardingOngPage = () => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-6"
+      className="flex flex-col gap-4"
     >
       <div>
         <label className="block text-lg font-medium text-gray-700 mb-2">
@@ -246,9 +466,9 @@ const OnboardingOngPage = () => {
         </label>
         <div className="flex items-center space-x-4">
           <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-teal-500">
-            {formData.profileImage ? (
+            {formData.croppedImage ? (
               <img
-                src={URL.createObjectURL(formData.profileImage)}
+                src={formData.croppedImage}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
@@ -270,16 +490,37 @@ const OnboardingOngPage = () => {
               </div>
             )}
           </div>
-          <label className="cursor-pointer bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
-            Escolher Foto
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-          </label>
+          <div className="flex flex-col space-y-2">
+            <label className="cursor-pointer bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
+              Escolher Foto
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
+            {formData.croppedImage && (
+              <div className="text-xs text-gray-500 text-center">
+                Clique em "Escolher Foto" para trocar
+              </div>
+            )}
+          </div>
         </div>
+      </div>
+
+      <div>
+        <label className="block text-lg font-medium text-gray-700 mb-2">
+          CEP
+        </label>
+        <input
+          type="text"
+          value={formData.cep}
+          onChange={handleCepChange}
+          className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+          placeholder="Digite o CEP"
+          maxLength={8}
+        />
       </div>
 
       <div>
@@ -323,16 +564,101 @@ const OnboardingOngPage = () => {
         <label className="block text-lg font-medium text-gray-700 mb-2">
           Endereço Completo
         </label>
-        <input
-          type="text"
-          value={formData.address}
-          onChange={(e) =>
-            setFormData({ ...formData, address: e.target.value })
-          }
-          className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
-          placeholder="Rua, número, complemento..."
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
+              className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+              placeholder="Rua"
+            />
+          </div>
+          <div>
+            <input
+              type="text"
+              value={formData.number}
+              onChange={(e) =>
+                setFormData({ ...formData, number: e.target.value })
+              }
+              className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+              placeholder="Número"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <input
+              type="text"
+              value={formData.complement}
+              onChange={(e) =>
+                setFormData({ ...formData, complement: e.target.value })
+              }
+              className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+              placeholder="Complemento (opcional)"
+            />
+          </div>
+        </div>
       </div>
+
+      {/* Modal de Recorte de Imagem */}
+      {showCropModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-4 max-w-md w-full m-4">
+            <h3 className="text-lg font-semibold mb-2">
+              Ajuste sua foto de perfil
+            </h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Arraste e ajuste a imagem para que ela fique bem posicionada
+              dentro do círculo.
+            </p>
+
+            <div className="mb-3 border border-gray-300 rounded-lg overflow-hidden max-h-[300px] flex items-center justify-center bg-gray-50">
+              <div className="w-full h-full flex items-center justify-center">
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={1}
+                  circularCrop
+                >
+                  <img
+                    ref={imgRef}
+                    src={tempImage}
+                    alt="Crop me"
+                    onLoad={onImageLoad}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "250px",
+                      width: "auto",
+                      height: "auto",
+                      objectFit: "contain",
+                    }}
+                  />
+                </ReactCrop>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <button
+                type="button"
+                onClick={handleCropCancel}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleCropConfirm}
+                className="px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+                disabled={!completedCrop}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 
