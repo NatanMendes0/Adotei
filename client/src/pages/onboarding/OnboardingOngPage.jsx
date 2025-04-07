@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { useNavigate } from "react-router-dom";
@@ -1078,24 +1078,6 @@ const OnboardingOngPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-teal-100">
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: "#FEE2E2", // Vermelho pastel
-            color: "#991B1B", // Vermelho escuro para o texto
-            padding: "12px 16px",
-            borderRadius: "8px",
-            fontSize: "14px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-          },
-          icon: "❌",
-        }}
-      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Lado esquerdo - Formulário */}

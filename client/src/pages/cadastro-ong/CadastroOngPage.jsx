@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { authService } from "../../services/api";
@@ -15,8 +16,47 @@ const CadastroOngPage = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const validateForm = () => {
+    if (!formData.name) {
+      toast.error("Por favor, informe o nome da ONG");
+      return false;
+    }
+
+    if (formData.name.length < 3) {
+      toast.error("O nome da ONG deve ter pelo menos 3 caracteres");
+      return false;
+    }
+
+    if (!formData.email) {
+      toast.error("Por favor, informe o e-mail da ONG");
+      return false;
+    }
+
+    if (!formData.email.includes("@")) {
+      toast.error("Por favor, informe um e-mail válido");
+      return false;
+    }
+
+    if (!formData.password) {
+      toast.error("Por favor, informe uma senha");
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
@@ -25,18 +65,23 @@ const CadastroOngPage = () => {
 
       if (result.success) {
         signIn(result.data);
+        toast.success(
+          "ONG cadastrada com sucesso! Vamos completar seu perfil."
+        );
 
         // Redireciona para o onboarding
         navigate("/ongs/onboarding");
       } else {
+        toast.error(result.message);
         setError(result.message);
       }
     } catch (error) {
       console.log(error);
-      setError(
+      const errorMessage =
         error.response?.data?.uiMessage ||
-          "Erro ao cadastrar ONG. Tente novamente."
-      );
+        "Erro ao cadastrar ONG. Tente novamente.";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +133,6 @@ const CadastroOngPage = () => {
                     id="name"
                     name="name"
                     type="text"
-                    required
                     value={formData.name}
                     onChange={handleChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
@@ -109,8 +153,7 @@ const CadastroOngPage = () => {
                   <input
                     id="email"
                     name="email"
-                    type="email"
-                    required
+                    type="text"
                     value={formData.email}
                     onChange={handleChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
@@ -132,7 +175,6 @@ const CadastroOngPage = () => {
                     id="password"
                     name="password"
                     type="password"
-                    required
                     value={formData.password}
                     onChange={handleChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"

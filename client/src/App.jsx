@@ -10,7 +10,7 @@ function App() {
       <FavoritesProvider>
         <ScrollToTop />
         <AppRoutes />
-        <Toaster position="top-right" />
+        <Toaster position="bottom-right" />
       </FavoritesProvider>
     </AuthProvider>
   );

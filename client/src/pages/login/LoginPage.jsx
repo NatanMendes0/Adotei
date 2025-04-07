@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { authService } from "../../services/api";
@@ -18,8 +19,37 @@ const LoginPage = () => {
   // Pega a rota de origem, se existir
   const from = location.state?.from?.pathname || "/";
 
+  const validateForm = () => {
+    if (!formData.email) {
+      toast.error("Por favor, informe seu e-mail");
+      return false;
+    }
+
+    if (!formData.email.includes("@")) {
+      toast.error("Por favor, informe um e-mail válido");
+      return false;
+    }
+
+    if (!formData.password) {
+      toast.error("Por favor, informe sua senha");
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
@@ -29,16 +59,20 @@ const LoginPage = () => {
       if (result.success) {
         // Atualiza o contexto de autenticação
         signIn(result.data);
+        toast.success("Login realizado com sucesso!");
 
         // Redireciona para a rota de origem ou para a home
         navigate(from, { replace: true });
       } else {
+        toast.error(result.message);
         setError(result.message);
       }
     } catch (error) {
-      setError(
-        error.response?.data?.message || "Erro ao fazer login. Tente novamente."
-      );
+      const errorMessage =
+        error.response?.data?.message ||
+        "Erro ao fazer login. Tente novamente.";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -89,8 +123,7 @@ const LoginPage = () => {
                   <input
                     id="email"
                     name="email"
-                    type="email"
-                    required
+                    type="text"
                     value={formData.email}
                     onChange={handleChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
@@ -112,7 +145,6 @@ const LoginPage = () => {
                     id="password"
                     name="password"
                     type="password"
-                    required
                     value={formData.password}
                     onChange={handleChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
