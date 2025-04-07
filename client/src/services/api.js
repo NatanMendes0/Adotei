@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
 
 export const authService = {
   async registerOng(data) {
-    const response = await api.post("/api/auth/cadastro", data);
+    const response = await api.post("/auth/cadastro", data);
 
     if (response.data.data && response.data.data.token) {
       // Armazena o token
@@ -88,6 +88,22 @@ export const authService = {
         message: error.response?.data?.message || "Erro ao fazer logout",
       };
     }
+  },
+};
+
+export const ongService = {
+  async onboarding(data) {
+    const response = await api.patch("/api/ong", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return {
+      success: true,
+      data: response.data,
+      message: response.data.uiMessage || "Onboarding realizado com sucesso!",
+    };
   },
 };
 

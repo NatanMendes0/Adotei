@@ -1,8 +1,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { useNavigate } from "react-router-dom";
+import onboardingImage from "../../assets/onboarding/2.png";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
 
@@ -12,19 +14,21 @@ const OnboardingOngPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     profileImage: null,
-    croppedImage: null, // Imagem recortada final
+    croppedImage: null,
     cep: "",
     state: "",
     city: "",
     address: "",
     number: "",
     complement: "",
-    workingDays: [],
-    workingHours: {
-      start: "09:00",
-      end: "18:00",
-    },
-    specialHours: [],
+    openingHours: [
+      {
+        specialHour: false,
+        weekDays: [],
+        opening: "09:00",
+        closing: "18:00",
+      },
+    ],
   });
   const [cities, setCities] = useState([]);
   const [hasSpecialHours, setHasSpecialHours] = useState(false);
@@ -38,6 +42,9 @@ const OnboardingOngPage = () => {
   const [crop, setCrop] = useState();
   const [completedCrop, setCompletedCrop] = useState(null);
   const imgRef = useRef(null);
+
+  // Estado para armazenar o valor anterior do horário
+  const [previousTimeValue, setPreviousTimeValue] = useState(null);
 
   // Função para criar um crop circular inicial
   function onImageLoad(e) {
@@ -186,6 +193,46 @@ const OnboardingOngPage = () => {
     fetchStates();
   }, []);
 
+  // Função para validar os campos do step 1
+  const validateStep1 = () => {
+    if (!formData.profileImage) {
+      toast.error("Por favor, selecione uma foto de perfil");
+      return false;
+    }
+
+    if (!formData.cep) {
+      toast.error("Por favor, informe o CEP");
+      return false;
+    }
+
+    if (formData.cep.length !== 8) {
+      toast.error("CEP inválido. Digite os 8 dígitos");
+      return false;
+    }
+
+    if (!formData.state) {
+      toast.error("Por favor, selecione o estado");
+      return false;
+    }
+
+    if (!formData.city) {
+      toast.error("Por favor, selecione a cidade");
+      return false;
+    }
+
+    if (!formData.address) {
+      toast.error("Por favor, informe o endereço");
+      return false;
+    }
+
+    if (!formData.number) {
+      toast.error("Por favor, informe o número");
+      return false;
+    }
+
+    return true;
+  };
+
   // Função para buscar dados do CEP
   const handleCepSearch = async (cep) => {
     if (cep.length === 8) {
@@ -193,26 +240,29 @@ const OnboardingOngPage = () => {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
 
-        if (!data.erro) {
-          // Encontrar o estado pelo UF
-          const state = states.find((s) => s.sigla === data.uf);
+        if (data.erro) {
+          toast.error("CEP inválido. Verifique e tente novamente");
+          return;
+        }
 
-          if (state?.id) {
-            // Primeiro setamos o estado para carregar as cidades
-            setFormData((prev) => ({
-              ...prev,
-              state: state.id,
-              address: data.logradouro || "",
-              complement: data.complemento || "",
-            }));
+        // Encontrar o estado pelo UF
+        const state = states.find((s) => s.sigla === data.uf);
 
-            // Chamamos handleStateChange para carregar as cidades, passando a cidade do CEP
-            handleStateChange({ target: { value: state.id } }, data.localidade);
-          }
+        if (state?.id) {
+          // Primeiro setamos o estado para carregar as cidades
+          setFormData((prev) => ({
+            ...prev,
+            state: state.nome,
+            address: data.logradouro || "",
+            complement: data.complemento || "",
+          }));
+
+          // Chamamos handleStateChange para carregar as cidades, passando a cidade do CEP
+          handleStateChange({ target: { value: state.id } }, data.localidade);
         }
       } catch (error) {
         console.error("Erro ao buscar CEP:", error);
-        setError("Erro ao buscar o CEP. Por favor, tente novamente.");
+        toast.error("Erro ao buscar o CEP. Por favor, tente novamente.");
       }
     }
   };
@@ -229,7 +279,13 @@ const OnboardingOngPage = () => {
   // Função para lidar com a mudança de estado
   const handleStateChange = async (e, cityFromCep = null) => {
     const stateId = e.target.value;
-    setFormData((prev) => ({ ...prev, state: stateId, city: "" }));
+    const selectedState = states.find((s) => s.id === stateId);
+
+    setFormData((prev) => ({
+      ...prev,
+      state: selectedState?.nome || "",
+      city: "",
+    }));
     setCities([]);
 
     if (stateId) {
@@ -260,147 +316,256 @@ const OnboardingOngPage = () => {
     }
   };
 
+  // Função para converter dia da semana para número
+  const dayToNumber = (day) => {
+    const days = {
+      Dom: 0,
+      Seg: 1,
+      Ter: 2,
+      Qua: 3,
+      Qui: 4,
+      Sex: 5,
+      Sáb: 7,
+    };
+    return days[day];
+  };
+
+  // Função para converter número para dia da semana
+  const numberToDay = (num) => {
+    const days = {
+      0: "Dom",
+      1: "Seg",
+      2: "Ter",
+      3: "Qua",
+      4: "Qui",
+      5: "Sex",
+      7: "Sáb",
+    };
+    return days[num];
+  };
+
+  // Função para verificar se um horário é válido
+  const isValidTimeRange = (opening, closing) => {
+    const [openHour, openMin] = opening.split(":").map(Number);
+    const [closeHour, closeMin] = closing.split(":").map(Number);
+
+    const openMinutes = openHour * 60 + openMin;
+    const closeMinutes = closeHour * 60 + closeMin;
+
+    return closeMinutes > openMinutes;
+  };
+
   const handleDayToggle = (day) => {
-    // Se o dia já está selecionado em algum horário especial, não permite selecionar
+    const dayNumber = dayToNumber(day);
+    const currentHours = [...formData.openingHours];
+    const mainSchedule = currentHours[0];
+
+    // Se o dia já está em algum horário especial, não permite selecionar
     if (
-      formData.specialHours.some((special) => special.days.includes(day)) &&
-      !formData.workingDays.includes(day)
+      currentHours.some(
+        (schedule, index) => index > 0 && schedule.weekDays.includes(dayNumber)
+      ) &&
+      !mainSchedule.weekDays.includes(dayNumber)
     ) {
       return;
     }
 
-    const newDays = formData.workingDays.includes(day)
-      ? formData.workingDays.filter((d) => d !== day)
-      : [...formData.workingDays, day];
+    const newWeekDays = mainSchedule.weekDays.includes(dayNumber)
+      ? mainSchedule.weekDays.filter((d) => d !== dayNumber)
+      : [...mainSchedule.weekDays, dayNumber];
 
-    // Atualiza os dias de trabalho
-    setFormData({ ...formData, workingDays: newDays });
+    // Se não houver mais dias selecionados no horário normal
+    if (newWeekDays.length === 0) {
+      // Remove todos os horários especiais
+      setFormData((prev) => ({
+        ...prev,
+        openingHours: [
+          {
+            ...mainSchedule,
+            weekDays: [],
+          },
+        ],
+      }));
+      setHasSpecialHours(false);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        openingHours: [
+          {
+            ...mainSchedule,
+            weekDays: newWeekDays,
+          },
+          ...currentHours.slice(1),
+        ],
+      }));
+    }
   };
 
   const handleSpecialHoursCheckboxChange = (e) => {
     const checked = e.target.checked;
-
-    // Só permite marcar se houver pelo menos um dia selecionado no horário normal
-    if (checked && formData.workingDays.length === 0) {
-      setError(
-        "Selecione pelo menos um dia no horário normal antes de adicionar horários especiais"
-      );
-      return;
-    }
-
     setHasSpecialHours(checked);
 
-    // Se desmarcar, limpa todos os horários especiais
     if (!checked) {
-      setFormData({
-        ...formData,
-        specialHours: [],
-      });
+      setFormData((prev) => ({
+        ...prev,
+        openingHours: [prev.openingHours[0]],
+      }));
     }
   };
 
   const handleSpecialHoursAdd = () => {
-    // Verifica se há horários especiais sem dias selecionados
-    const hasEmptySpecialHours = formData.specialHours.some(
-      (special) => special.days.length === 0
+    const currentHours = [...formData.openingHours];
+    const mainSchedule = currentHours[0];
+    const allSelectedDays = currentHours.reduce(
+      (acc, schedule) => [...acc, ...schedule.weekDays],
+      []
+    );
+    const availableDays = [0, 1, 2, 3, 4, 5, 7].filter(
+      (day) => !allSelectedDays.includes(day)
     );
 
-    if (hasEmptySpecialHours) {
-      setError(
-        "Preencha os dias do horário especial atual antes de adicionar um novo"
-      );
-      return;
-    }
-
-    // Verifica se há dias disponíveis
-    const availableDays = getAvailableDays();
-
     if (availableDays.length === 0) {
-      setError(
+      toast.error(
         "Não há mais dias disponíveis para adicionar horários especiais"
       );
       return;
     }
 
-    setFormData({
-      ...formData,
-      specialHours: [
-        ...formData.specialHours,
+    setFormData((prev) => ({
+      ...prev,
+      openingHours: [
+        ...prev.openingHours,
         {
-          days: [],
-          start: "09:00",
-          end: "18:00",
+          specialHour: true,
+          weekDays: [],
+          opening: "09:00",
+          closing: "18:00",
         },
       ],
-    });
+    }));
   };
 
   const handleSpecialHoursUpdate = (index, field, value) => {
-    const newSpecialHours = [...formData.specialHours];
-    newSpecialHours[index] = {
-      ...newSpecialHours[index],
+    const currentHours = [...formData.openingHours];
+    const schedule = currentHours[index];
+
+    currentHours[index] = {
+      ...schedule,
       [field]: value,
     };
-    setFormData({ ...formData, specialHours: newSpecialHours });
+
+    setFormData((prev) => ({
+      ...prev,
+      openingHours: currentHours,
+    }));
   };
 
-  const isDaySelected = (day) => {
-    // Verifica se o dia está no horário comum
-    if (formData.workingDays.includes(day)) return true;
+  const validateTimeRange = (index, field, value) => {
+    const schedule = formData.openingHours[index];
+    const otherField = field === "opening" ? "closing" : "opening";
+    const otherValue = schedule[otherField];
 
-    // Verifica se o dia está em algum horário especial
-    return formData.specialHours.some((special) => special.days.includes(day));
-  };
-
-  const getAvailableDays = () => {
-    return ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].filter(
-      (day) => !isDaySelected(day)
-    );
-  };
-
-  const shouldRemoveSpecialHour = (specialHour) => {
-    // Se não tem dias selecionados e todos os dias estão desabilitados
-    return (
-      specialHour.days.length === 0 &&
-      ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].every(
-        (day) => isDaySelected(day) && !specialHour.days.includes(day)
+    if (
+      !isValidTimeRange(
+        field === "opening" ? value : otherValue,
+        field === "closing" ? value : otherValue
       )
-    );
+    ) {
+      toast.error(
+        "O horário de fechamento deve ser posterior ao horário de abertura"
+      );
+
+      // Reverte para o valor anterior
+      const currentHours = [...formData.openingHours];
+      currentHours[index] = {
+        ...schedule,
+        [field]: previousTimeValue,
+      };
+
+      setFormData((prev) => ({
+        ...prev,
+        openingHours: currentHours,
+      }));
+
+      return false;
+    }
+    return true;
   };
 
   const handleSpecialDayToggle = (index, day) => {
-    // Se o dia já está selecionado em outro horário, não permite selecionar
-    if (
-      isDaySelected(day) &&
-      !formData.specialHours[index].days.includes(day)
-    ) {
+    const dayNumber = dayToNumber(day);
+    const currentHours = [...formData.openingHours];
+    const schedule = currentHours[index];
+
+    // Verifica se o dia já está selecionado em outro horário
+    const isDaySelectedInOtherSchedule = currentHours.some(
+      (otherSchedule, otherIndex) =>
+        otherIndex !== index && otherSchedule.weekDays.includes(dayNumber)
+    );
+
+    if (isDaySelectedInOtherSchedule) {
       return;
     }
 
-    const newSpecialHours = [...formData.specialHours];
-    newSpecialHours[index] = {
-      ...newSpecialHours[index],
-      days: newSpecialHours[index].days.includes(day)
-        ? newSpecialHours[index].days.filter((d) => d !== day)
-        : [...newSpecialHours[index].days, day],
+    const newWeekDays = schedule.weekDays.includes(dayNumber)
+      ? schedule.weekDays.filter((d) => d !== dayNumber)
+      : [...schedule.weekDays, dayNumber];
+
+    currentHours[index] = {
+      ...schedule,
+      weekDays: newWeekDays,
     };
 
-    setFormData({ ...formData, specialHours: newSpecialHours });
+    setFormData((prev) => ({
+      ...prev,
+      openingHours: currentHours,
+    }));
   };
 
   const handleSpecialHoursRemove = (index) => {
-    setFormData({
-      ...formData,
-      specialHours: formData.specialHours.filter((_, i) => i !== index),
-    });
+    setFormData((prev) => ({
+      ...prev,
+      openingHours: prev.openingHours.filter((_, i) => i !== index),
+    }));
+  };
+
+  const isDaySelected = (day) => {
+    const dayNumber = dayToNumber(day);
+    return formData.openingHours.some((schedule) =>
+      schedule.weekDays.includes(dayNumber)
+    );
+  };
+
+  const getAvailableDays = () => {
+    const allSelectedDays = formData.openingHours.reduce(
+      (acc, schedule) => [...acc, ...schedule.weekDays],
+      []
+    );
+    return [0, 1, 2, 3, 4, 5, 7].filter(
+      (day) => !allSelectedDays.includes(day)
+    );
+  };
+
+  const shouldRemoveSpecialHour = (schedule) => {
+    return schedule.weekDays.length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
 
     try {
+      // Verificar se pelo menos um dia está selecionado
+      const hasSelectedDays = formData.openingHours.some(
+        (schedule) => schedule.weekDays.length > 0
+      );
+
+      if (!hasSelectedDays) {
+        toast.error("Selecione pelo menos um dia de funcionamento");
+        setIsLoading(false);
+        return;
+      }
+
       // Preparar os dados para envio
       const formDataToSend = new FormData();
 
@@ -409,6 +574,13 @@ const OnboardingOngPage = () => {
         formDataToSend.append("profileImage", formData.profileImage);
       }
 
+      // Filtrar horários especiais vazios
+      const filteredOpeningHours = formData.openingHours.filter(
+        (schedule) =>
+          !schedule.specialHour ||
+          (schedule.specialHour && schedule.weekDays.length > 0)
+      );
+
       // Adicionar os outros dados
       formDataToSend.append("state", formData.state);
       formDataToSend.append("city", formData.city);
@@ -416,16 +588,8 @@ const OnboardingOngPage = () => {
       formDataToSend.append("number", formData.number);
       formDataToSend.append("complement", formData.complement);
       formDataToSend.append(
-        "workingDays",
-        JSON.stringify(formData.workingDays)
-      );
-      formDataToSend.append(
-        "workingHours",
-        JSON.stringify(formData.workingHours)
-      );
-      formDataToSend.append(
-        "specialHours",
-        JSON.stringify(formData.specialHours)
+        "openingHours",
+        JSON.stringify(filteredOpeningHours)
       );
 
       // Enviar os dados para a API
@@ -444,7 +608,7 @@ const OnboardingOngPage = () => {
       navigate("/ongs/dashboard");
     } catch (error) {
       console.error("Erro ao enviar dados do onboarding:", error);
-      setError(
+      toast.error(
         error.response?.data?.message ||
           "Erro ao salvar as informações. Por favor, tente novamente."
       );
@@ -528,7 +692,7 @@ const OnboardingOngPage = () => {
           Estado
         </label>
         <select
-          value={formData.state}
+          value={states.find((s) => s.nome === formData.state)?.id || ""}
           onChange={handleStateChange}
           className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
         >
@@ -675,10 +839,13 @@ const OnboardingOngPage = () => {
         </label>
         <div className="grid grid-cols-7 gap-2">
           {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => {
-            const isSelected = formData.workingDays.includes(day);
+            const isSelected = formData.openingHours[0].weekDays.includes(
+              dayToNumber(day)
+            );
             const isDisabled =
-              formData.specialHours.some((special) =>
-                special.days.includes(day)
+              formData.openingHours.some(
+                (schedule, index) =>
+                  index > 0 && schedule.weekDays.includes(dayToNumber(day))
               ) && !isSelected;
 
             return (
@@ -709,31 +876,23 @@ const OnboardingOngPage = () => {
         <div className="flex items-center space-x-4">
           <input
             type="time"
-            value={formData.workingHours.start}
+            value={formData.openingHours[0].opening}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                workingHours: {
-                  ...formData.workingHours,
-                  start: e.target.value,
-                },
-              })
+              handleSpecialHoursUpdate(0, "opening", e.target.value)
             }
+            onFocus={(e) => setPreviousTimeValue(e.target.value)}
+            onBlur={(e) => validateTimeRange(0, "opening", e.target.value)}
             className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
           />
           <span className="text-gray-600">até</span>
           <input
             type="time"
-            value={formData.workingHours.end}
+            value={formData.openingHours[0].closing}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                workingHours: {
-                  ...formData.workingHours,
-                  end: e.target.value,
-                },
-              })
+              handleSpecialHoursUpdate(0, "closing", e.target.value)
             }
+            onFocus={(e) => setPreviousTimeValue(e.target.value)}
+            onBlur={(e) => validateTimeRange(0, "closing", e.target.value)}
             className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
           />
         </div>
@@ -743,11 +902,13 @@ const OnboardingOngPage = () => {
         <input
           type="checkbox"
           id="specialHours"
-          checked={hasSpecialHours}
+          checked={
+            hasSpecialHours && formData.openingHours[0].weekDays.length > 0
+          }
           onChange={handleSpecialHoursCheckboxChange}
-          disabled={formData.workingDays.length === 0}
+          disabled={formData.openingHours[0].weekDays.length === 0}
           className={`h-5 w-5 text-teal-600 focus:ring-teal-500 border-gray-300 rounded ${
-            formData.workingDays.length === 0
+            formData.openingHours[0].weekDays.length === 0
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}
@@ -755,13 +916,13 @@ const OnboardingOngPage = () => {
         <label
           htmlFor="specialHours"
           className={`text-lg font-medium ${
-            formData.workingDays.length === 0
+            formData.openingHours[0].weekDays.length === 0
               ? "text-gray-400"
               : "text-gray-700"
           }`}
         >
           Horários diferentes em alguns dias
-          {formData.workingDays.length === 0 && (
+          {formData.openingHours[0].weekDays.length === 0 && (
             <span className="block text-sm text-gray-500">
               Selecione pelo menos um dia no horário normal
             </span>
@@ -771,7 +932,7 @@ const OnboardingOngPage = () => {
 
       {hasSpecialHours && (
         <div className="space-y-4">
-          {formData.specialHours.map((special, index) => (
+          {formData.openingHours.slice(1).map((special, index) => (
             <div
               key={index}
               className="p-4 border-2 border-gray-200 rounded-lg space-y-4"
@@ -782,7 +943,7 @@ const OnboardingOngPage = () => {
                 </h3>
                 <button
                   type="button"
-                  onClick={() => handleSpecialHoursRemove(index)}
+                  onClick={() => handleSpecialHoursRemove(index + 1)}
                   className="text-red-600 hover:text-red-700"
                 >
                   Remover
@@ -796,14 +957,19 @@ const OnboardingOngPage = () => {
                 <div className="grid grid-cols-7 gap-2">
                   {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(
                     (day) => {
-                      const isSelected = special.days.includes(day);
-                      const isDisabled = isDaySelected(day) && !isSelected;
+                      const dayNumber = dayToNumber(day);
+                      const isSelected = special.weekDays.includes(dayNumber);
+                      const isDisabled = formData.openingHours.some(
+                        (schedule, i) =>
+                          i !== index + 1 &&
+                          schedule.weekDays.includes(dayNumber)
+                      );
 
                       return (
                         <button
                           key={day}
                           type="button"
-                          onClick={() => handleSpecialDayToggle(index, day)}
+                          onClick={() => handleSpecialDayToggle(index + 1, day)}
                           disabled={isDisabled}
                           className={`p-2 rounded-lg text-center text-sm font-medium transition-all duration-200 ${
                             isSelected
@@ -828,18 +994,34 @@ const OnboardingOngPage = () => {
                 <div className="flex items-center space-x-4">
                   <input
                     type="time"
-                    value={special.start}
+                    value={special.opening}
                     onChange={(e) =>
-                      handleSpecialHoursUpdate(index, "start", e.target.value)
+                      handleSpecialHoursUpdate(
+                        index + 1,
+                        "opening",
+                        e.target.value
+                      )
+                    }
+                    onFocus={(e) => setPreviousTimeValue(e.target.value)}
+                    onBlur={(e) =>
+                      validateTimeRange(index + 1, "opening", e.target.value)
                     }
                     className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                   />
                   <span className="text-gray-600">até</span>
                   <input
                     type="time"
-                    value={special.end}
+                    value={special.closing}
                     onChange={(e) =>
-                      handleSpecialHoursUpdate(index, "end", e.target.value)
+                      handleSpecialHoursUpdate(
+                        index + 1,
+                        "closing",
+                        e.target.value
+                      )
+                    }
+                    onFocus={(e) => setPreviousTimeValue(e.target.value)}
+                    onBlur={(e) =>
+                      validateTimeRange(index + 1, "closing", e.target.value)
                     }
                     className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                   />
@@ -869,6 +1051,24 @@ const OnboardingOngPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-teal-100">
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#FEE2E2", // Vermelho pastel
+            color: "#991B1B", // Vermelho escuro para o texto
+            padding: "12px 16px",
+            borderRadius: "8px",
+            fontSize: "14px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+          },
+          icon: "❌",
+        }}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Lado esquerdo - Formulário */}
@@ -928,7 +1128,11 @@ const OnboardingOngPage = () => {
               {currentStep < 2 ? (
                 <button
                   type="button"
-                  onClick={() => setCurrentStep(currentStep + 1)}
+                  onClick={() => {
+                    if (validateStep1()) {
+                      setCurrentStep(currentStep + 1);
+                    }
+                  }}
                   disabled={isLoading}
                   className="ml-auto px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -986,9 +1190,9 @@ const OnboardingOngPage = () => {
             >
               <div className="absolute inset-0 bg-teal-600 rounded-3xl transform rotate-3"></div>
               <div className="relative bg-white rounded-3xl p-8 shadow-xl">
-                <div className="aspect-w-4 aspect-h-3 rounded-lg overflow-hidden mb-6">
+                <div className="aspect-w-4 aspect-h-3 rounded-lg overflow-hidden mb-6 h-96">
                   <img
-                    src={`/images/onboarding-step-${currentStep}.jpg`}
+                    src={onboardingImage}
                     alt="Ilustração"
                     className="w-full h-full object-cover"
                   />
