@@ -1,5 +1,5 @@
 // chamar model de usuário
-const User = require("../models/userModel");
+const Ong = require("../models/ongModel");
 const PasswordReset = require("../models/passwordResetModel");
 
 // chamar dependências
@@ -16,36 +16,34 @@ const { handlePasswordReset } = require("../utils/emailTransporter");
 
 /* FUNÇÕES DE CONTROLE DE USUÁRIO */
 
-// criar um usuário
-const createUser = asyncHandler(async (req, res) => {
-  console.log("=== INÍCIO DO PROCESSO DE CRIAÇÃO DE USUÁRIO ===");
+// criar uma ONG
+const createOng = asyncHandler(async (req, res) => {
+  console.log("=== INÍCIO DO PROCESSO DE CRIAÇÃO DE ONG ===");
   console.log("Dados recebidos:", JSON.stringify(req.body, null, 2));
 
   const email = req.body.email;
   console.log(`Verificando se o usuário com email ${email} já existe...`);
 
-  const findUser = await User.findOne({ email: email });
-  if (!findUser) {
-    console.log("Usuário não encontrado, criando novo usuário...");
-    try {
-      const newUser = await User.create(req.body);
-      console.log(
-        "Usuário criado com sucesso:",
-        JSON.stringify(newUser, null, 2)
-      );
-      console.log("=== FIM DO PROCESSO DE CRIAÇÃO DE USUÁRIO ===");
-      res.status(201).json(newUser);
-    } catch (error) {
-      console.error("Erro ao criar usuário:", error);
-      console.error("Stack trace:", error.stack);
-      res
-        .status(500)
-        .json({ message: "Erro ao criar usuário", error: error.message });
-    }
-  } else {
-    console.log("Usuário já existe com o email fornecido");
-    console.log("=== FIM DO PROCESSO DE CRIAÇÃO DE USUÁRIO ===");
-    return res.status(400).json({ message: "Usuário já existe!" });
+  const findOng = await Ong.findOne({ email: email });
+
+  if (findOng) {
+    console.log("ONG já existe com o email fornecido");
+    console.log("=== FIM DO PROCESSO DE CRIAÇÃO DE ONG ===");
+    return res.status(400).json({ message: "ONG já existe!" });
+  }
+
+  console.log("ONG não encontrado, criando nova ONG...");
+  try {
+    const newOng = await Ong.create(req.body);
+    console.log("ONG criada com sucesso:", JSON.stringify(newOng, null, 2));
+    console.log("=== FIM DO PROCESSO DE CRIAÇÃO DE ONG ===");
+    res.status(201).json(newOng);
+  } catch (error) {
+    console.error("Erro ao criar ONG:", error);
+    console.error("Stack trace:", error.stack);
+    res
+      .status(500)
+      .json({ message: "Erro ao criar ONG", error: error.message });
   }
 });
 
@@ -90,11 +88,9 @@ const login = asyncHandler(async (req, res) => {
   if (findUser) {
     // verifica se o usuário está bloqueado, retornando um json se estiver
     if (findUser.isBlocked) {
-      return res
-        .status(401)
-        .json({
-          message: "Usuário bloqueado. Entre em contato com seu administrador!",
-        });
+      return res.status(401).json({
+        message: "Usuário bloqueado. Entre em contato com seu administrador!",
+      });
     }
     // verifica se a senha está correta
     if (await findUser.isPasswordMatched(password)) {
@@ -134,12 +130,10 @@ const login = asyncHandler(async (req, res) => {
       // se a quantidade de tentativas for igual a 3, bloqueia o usuário
       if (updatedUser.loginAttempts >= process.env.MAX_LOGIN_ATTEMPTS) {
         await User.findByIdAndUpdate(findUser._id, { isBlocked: true });
-        return res
-          .status(401)
-          .json({
-            message:
-              "Não é possível fazer login. Usuário bloqueado. Entre em contato com seu administrador!",
-          });
+        return res.status(401).json({
+          message:
+            "Não é possível fazer login. Usuário bloqueado. Entre em contato com seu administrador!",
+        });
       }
       return res.status(401).json({ message: "Senha incorreta." });
     }
@@ -274,7 +268,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 // exportar controladores
 module.exports = {
-  createUser,
+  createOng,
   login,
   getUser,
   getUsers,

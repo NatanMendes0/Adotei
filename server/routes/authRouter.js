@@ -1,52 +1,50 @@
 // chamar dependências
-const express = require('express');
+const express = require("express");
 
-// chamar controladores
-const { 
-    createUser, 
-    getUser, 
-    getUsers, 
-    login, 
-    logout,
-    generateForgotPasswordToken,
-    resetPassword,
-    editUser, 
-    deleteUser,
-} = require('../controllers/userCtrl');
+// // chamar controladores
+const { createOng } = require("../controllers/authCtrl");
 
-// chamar middleware que verifica a autenticação 
-const { authMiddleware, isOriginalUser } = require('../middleware/authMiddleware');
+// // chamar middleware que verifica a autenticação
+const {
+  authMiddleware,
+  isOriginalUser,
+} = require("../middleware/authMiddleware");
 
-// inicialização do roteador
+// // inicialização do roteador
 const router = express.Router();
 
-// criar um usuário
-router.post('/cadastro', createUser);
+// // criar um usuário
+router.post("/cadastro", createOng);
 
-// logout 
-router.get('/logout', logout);
+// // logout
+// router.get("/logout", logout);
 
-// solicitar mudança de senha
-router.post('/esqueceu-senha', generateForgotPasswordToken);
+// // solicitar mudança de senha
+// router.post("/esqueceu-senha", generateForgotPasswordToken);
 
-// mudar senha após confirmação de email
-router.post('/esqueceu-senha/:token', resetPassword);
+// // mudar senha após confirmação de email
+// router.post("/esqueceu-senha/:token", resetPassword);
 
-// puxar um usuário
-router.get('/:id', authMiddleware, getUser);
+// // puxar um usuário
+// router.get("/:id", authMiddleware, getUser);
 
-//TODO: fazer a rota puxar apenas o usuário de um estabelecimento específico
-// puxar todos os usuários
-router.get('/', getUsers);
+// //TODO: fazer a rota puxar apenas o usuário de um estabelecimento específico
+// // puxar todos os usuários
+// router.get("/", getUsers);
 
-// login 
-router.post('/login', login);
+// // login
+// router.post("/login", login);
 
-// atualizar usuário
-router.put('/editar-usuario/:id', authMiddleware, isOriginalUser, editUser);
+// // atualizar usuário
+// router.put("/editar-usuario/:id", authMiddleware, isOriginalUser, editUser);
 
-// excluir usuario
-router.delete('/deletar-usuario/:id', authMiddleware, isOriginalUser, deleteUser);
+// // excluir usuario
+// router.delete(
+//   "/deletar-usuario/:id",
+//   authMiddleware,
+//   isOriginalUser,
+//   deleteUser
+// );
 
-// exportar o roteador
+// // exportar o roteador
 module.exports = router;

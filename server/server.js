@@ -24,28 +24,45 @@ app.use(helmet());
 app.use(bodyParser.json());
 
 // Configuração do CORS
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://adotei.andreybernardoni.tech",
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "https://adotei.andreybernardoni.tech",
+    origin: function (origin, callback) {
+      // Permitir requisições sem origin (como mobile apps ou curl)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = "A política de CORS não permite acesso deste origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
 
 // importação das rotas
 const authRouter = require("./routes/authRouter");
-const establishmentRouter = require("./routes/establishmentRouter");
-const animalRouter = require("./routes/animalRouter");
 
-// chamar as rotas
-app.use("/api/usuarios", authRouter);
-app.use("/api/estabelecimentos", establishmentRouter);
-app.use("/api/animais", animalRouter);
+// Criar um router principal para /api
+const apiRouter = express.Router();
 
-//test api
-app.get("/api/ping", (req, res) => {
-  //não retornar em json, apenas um pong
+// Agrupar todas as rotas sob /api
+apiRouter.use("/auth", authRouter);
+
+// Rota de teste
+apiRouter.get("/ping", (req, res) => {
   res.send("pong! :D");
 });
+
+// Usar o router principal
+app.use("/api", apiRouter);
 
 // inicialização do servidor na porta 5000
 const PORT = process.env.PORT || 5000;
