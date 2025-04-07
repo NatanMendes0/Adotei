@@ -1206,6 +1206,7 @@ const OnboardingOngPage = () => {
                     src={onboardingImage}
                     alt="Ilustração"
                     className="w-full h-full object-cover"
+                    style={{ objectPosition: "center 30%" }}
                   />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
