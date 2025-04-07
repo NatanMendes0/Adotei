@@ -80,7 +80,6 @@ const AdoptPage = () => {
     termosAceitos: false,
   });
   const [step, setStep] = useState(1);
-  const [errors, setErrors] = useState({});
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
 
@@ -201,37 +200,43 @@ const AdoptPage = () => {
   };
 
   const validateStep = (currentStep) => {
-    const newErrors = {};
+    const errors = {};
 
     switch (currentStep) {
       case 1:
-        if (!formData.nome) newErrors.nome = "Nome é obrigatório";
-        if (!formData.email) newErrors.email = "Email é obrigatório";
-        if (!formData.telefone) newErrors.telefone = "Telefone é obrigatório";
+        if (!formData.nome) errors.nome = "Nome é obrigatório";
+        if (!formData.email) errors.email = "Email é obrigatório";
+        if (!formData.telefone) errors.telefone = "Telefone é obrigatório";
         break;
       case 2:
-        if (!formData.cep) newErrors.cep = "CEP é obrigatório";
-        if (!formData.estado) newErrors.estado = "Estado é obrigatório";
-        if (!formData.cidade) newErrors.cidade = "Cidade é obrigatória";
-        if (!formData.endereco) newErrors.endereco = "Endereço é obrigatório";
-        if (!formData.numero) newErrors.numero = "Número é obrigatório";
-        if (!formData.moradia)
-          newErrors.moradia = "Tipo de moradia é obrigatório";
+        if (!formData.cep) errors.cep = "CEP é obrigatório";
+        if (!formData.estado) errors.estado = "Estado é obrigatório";
+        if (!formData.cidade) errors.cidade = "Cidade é obrigatória";
+        if (!formData.endereco) errors.endereco = "Endereço é obrigatório";
+        if (!formData.numero) errors.numero = "Número é obrigatório";
+        if (!formData.moradia) errors.moradia = "Tipo de moradia é obrigatório";
         break;
       case 3:
         if (!formData.motivoAdocao)
-          newErrors.motivoAdocao = "Motivo da adoção é obrigatório";
+          errors.motivoAdocao = "Motivo da adoção é obrigatório";
         break;
       case 4:
         if (!formData.termosAceitos)
-          newErrors.termosAceitos = "Você precisa aceitar os termos";
+          errors.termosAceitos = "Você precisa aceitar os termos";
         break;
       default:
         break;
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // Exibir erros no toast
+    if (Object.keys(errors).length > 0) {
+      Object.values(errors).forEach((error) => {
+        toast.error(error);
+      });
+      return false;
+    }
+
+    return true;
   };
 
   const handleNext = () => {
@@ -326,9 +331,6 @@ const AdoptPage = () => {
                     onChange={handleInputChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   />
-                  {errors.nome && (
-                    <p className="mt-1 text-sm text-red-600">{errors.nome}</p>
-                  )}
                 </div>
                 <div>
                   <label className="block text-lg font-medium text-gray-700 mb-2">
@@ -341,9 +343,6 @@ const AdoptPage = () => {
                     onChange={handleInputChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                  )}
                 </div>
                 <div>
                   <label className="block text-lg font-medium text-gray-700 mb-2">
@@ -356,11 +355,6 @@ const AdoptPage = () => {
                     onChange={handleInputChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   />
-                  {errors.telefone && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.telefone}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
@@ -386,9 +380,6 @@ const AdoptPage = () => {
                     placeholder="Digite o CEP"
                     maxLength={8}
                   />
-                  {errors.cep && (
-                    <p className="mt-1 text-sm text-red-600">{errors.cep}</p>
-                  )}
                 </div>
 
                 <div>
@@ -410,9 +401,6 @@ const AdoptPage = () => {
                       </option>
                     ))}
                   </select>
-                  {errors.estado && (
-                    <p className="mt-1 text-sm text-red-600">{errors.estado}</p>
-                  )}
                 </div>
 
                 <div>
@@ -435,9 +423,6 @@ const AdoptPage = () => {
                       </option>
                     ))}
                   </select>
-                  {errors.cidade && (
-                    <p className="mt-1 text-sm text-red-600">{errors.cidade}</p>
-                  )}
                 </div>
 
                 <div>
@@ -476,14 +461,6 @@ const AdoptPage = () => {
                       />
                     </div>
                   </div>
-                  {errors.endereco && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.endereco}
-                    </p>
-                  )}
-                  {errors.numero && (
-                    <p className="mt-1 text-sm text-red-600">{errors.numero}</p>
-                  )}
                 </div>
 
                 <div>
@@ -501,11 +478,6 @@ const AdoptPage = () => {
                     <option value="apartamento">Apartamento</option>
                     <option value="outro">Outro</option>
                   </select>
-                  {errors.moradia && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.moradia}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
@@ -557,11 +529,6 @@ const AdoptPage = () => {
                     rows={4}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   />
-                  {errors.motivoAdocao && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.motivoAdocao}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
@@ -606,11 +573,6 @@ const AdoptPage = () => {
                       animal e que a ONG poderá fazer visitas de acompanhamento.
                     </span>
                   </label>
-                  {errors.termosAceitos && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.termosAceitos}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>

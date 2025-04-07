@@ -1,3 +1,4 @@
+import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
 import { AuthProvider } from "./contexts/AuthContext";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
@@ -9,6 +10,7 @@ function App() {
       <FavoritesProvider>
         <ScrollToTop />
         <AppRoutes />
+        <Toaster position="top-right" />
       </FavoritesProvider>
     </AuthProvider>
   );
