@@ -1,8 +1,9 @@
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useFavorites } from "../../../contexts/FavoritesContext";
+import { isFavorite } from "../../../data/favorites";
 
 // Dados mockados para exemplo
 const mockPets = [
@@ -64,14 +65,24 @@ const mockPets = [
 
 const PetDetailsPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const pet = mockPets.find((p) => p.id === parseInt(id));
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const { favorites, toggleFavorite } = useFavorites();
+  const [isFavoritePet, setIsFavoritePet] = useState(false);
+  const { toggleFavorite } = useFavorites();
 
   useEffect(() => {
-    setIsFavorite(favorites.some((favorite) => favorite.id === pet?.id));
-  }, [favorites, pet]);
+    setIsFavoritePet(isFavorite(pet?.id));
+  }, [pet?.id]);
+
+  const handleFavoriteClick = () => {
+    toggleFavorite(pet.id);
+    setIsFavoritePet(!isFavoritePet);
+  };
+
+  const handleAdoptClick = () => {
+    navigate(`/adotar/${pet.id}`);
+  };
 
   if (!pet) {
     return (
@@ -203,14 +214,17 @@ const PetDetailsPage = () => {
               </div>
               <p className="mt-6 text-gray-600">{pet.description}</p>
               <div className="mt-8 space-y-4">
-                <button className="w-full bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors">
+                <button
+                  onClick={handleAdoptClick}
+                  className="w-full bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors"
+                >
                   Quero Adotar
                 </button>
                 <button
-                  onClick={() => toggleFavorite(pet)}
+                  onClick={handleFavoriteClick}
                   className="w-full border-2 border-teal-600 text-teal-600 px-6 py-3 rounded-lg hover:bg-teal-50 transition-colors flex items-center justify-center gap-2"
                 >
-                  {isFavorite ? (
+                  {isFavoritePet ? (
                     <>
                       <HeartIconSolid className="h-5 w-5" />
                       Remover dos Favoritos

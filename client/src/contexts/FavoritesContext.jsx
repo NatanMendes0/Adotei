@@ -1,5 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getFavorites } from "../data/favorites";
+import {
+  addToFavorites,
+  getFavorites,
+  removeFromFavorites,
+} from "../data/favorites";
 
 const FavoritesContext = createContext();
 
@@ -16,8 +20,20 @@ export const FavoritesProvider = ({ children }) => {
     setFavorites(favoritePets);
   };
 
+  const toggleFavorite = (petId) => {
+    const currentFavorites = getFavorites();
+    if (currentFavorites.includes(petId)) {
+      removeFromFavorites(petId);
+    } else {
+      addToFavorites(petId);
+    }
+    updateFavorites();
+  };
+
   return (
-    <FavoritesContext.Provider value={{ favorites, updateFavorites }}>
+    <FavoritesContext.Provider
+      value={{ favorites, updateFavorites, toggleFavorite }}
+    >
       {children}
     </FavoritesContext.Provider>
   );
