@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 
 // Dados mockados para exemplo (mesmo do PetDetailsPage)
@@ -66,7 +67,12 @@ const AdoptPage = () => {
     nome: "",
     email: "",
     telefone: "",
+    cep: "",
+    estado: "",
+    cidade: "",
     endereco: "",
+    numero: "",
+    complemento: "",
     moradia: "",
     experiencia: "",
     outrosPets: "",
@@ -75,6 +81,8 @@ const AdoptPage = () => {
   });
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
+  const [estados, setEstados] = useState([]);
+  const [cidades, setCidades] = useState([]);
 
   useEffect(() => {
     if (!pet) {
@@ -82,12 +90,114 @@ const AdoptPage = () => {
     }
   }, [pet, navigate]);
 
+  // Carregar estados ao montar o componente
+  useEffect(() => {
+    const fetchEstados = async () => {
+      try {
+        const response = await fetch(
+          "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
+        );
+        const data = await response.json();
+        // Ordenar estados alfabeticamente
+        const sortedEstados = data.sort((a, b) => a.nome.localeCompare(b.nome));
+        setEstados(sortedEstados);
+      } catch (error) {
+        console.error("Erro ao carregar estados:", error);
+      }
+    };
+
+    fetchEstados();
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  // Função para buscar dados do CEP
+  const handleCepSearch = async (cep) => {
+    if (cep.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+
+        if (data.erro) {
+          toast.error("CEP inválido. Verifique e tente novamente");
+          return;
+        }
+
+        // Encontrar o estado pelo UF
+        const estado = estados.find((s) => s.sigla === data.uf);
+
+        if (estado?.id) {
+          // Primeiro setamos o estado para carregar as cidades
+          setFormData((prev) => ({
+            ...prev,
+            estado: estado.nome,
+            endereco: data.logradouro || "",
+            complemento: data.complemento || "",
+          }));
+
+          // Chamamos handleEstadoChange para carregar as cidades, passando a cidade do CEP
+          handleEstadoChange({ target: { value: estado.id } }, data.localidade);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar CEP:", error);
+        toast.error("Erro ao buscar o CEP. Por favor, tente novamente.");
+      }
+    }
+  };
+
+  // Função para lidar com a mudança do CEP
+  const handleCepChange = (e) => {
+    const cep = e.target.value.replace(/\D/g, "");
+    setFormData((prev) => ({ ...prev, cep }));
+    if (cep.length === 8) {
+      handleCepSearch(cep);
+    }
+  };
+
+  // Função para lidar com a mudança de estado
+  const handleEstadoChange = async (e, cidadeFromCep = null) => {
+    const estadoId = e.target.value;
+    const selectedEstado = estados.find((s) => s.id === estadoId);
+
+    setFormData((prev) => ({
+      ...prev,
+      estado: selectedEstado?.nome || "",
+      cidade: "",
+    }));
+    setCidades([]);
+
+    if (estadoId) {
+      try {
+        const response = await fetch(
+          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoId}/municipios`
+        );
+        const data = await response.json();
+        const sortedCidades = data.sort((a, b) => a.nome.localeCompare(b.nome));
+        setCidades(sortedCidades);
+
+        // Se temos uma cidade do CEP, setamos ela agora
+        if (cidadeFromCep) {
+          // Encontramos a cidade exata na lista
+          const cidadeFound = sortedCidades.find(
+            (cidade) => cidade.nome === cidadeFromCep
+          );
+          if (cidadeFound) {
+            setFormData((prev) => ({
+              ...prev,
+              cidade: cidadeFound.nome,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar cidades:", error);
+      }
+    }
   };
 
   const validateStep = (currentStep) => {
@@ -100,7 +210,11 @@ const AdoptPage = () => {
         if (!formData.telefone) newErrors.telefone = "Telefone é obrigatório";
         break;
       case 2:
+        if (!formData.cep) newErrors.cep = "CEP é obrigatório";
+        if (!formData.estado) newErrors.estado = "Estado é obrigatório";
+        if (!formData.cidade) newErrors.cidade = "Cidade é obrigatória";
         if (!formData.endereco) newErrors.endereco = "Endereço é obrigatório";
+        if (!formData.numero) newErrors.numero = "Número é obrigatório";
         if (!formData.moradia)
           newErrors.moradia = "Tipo de moradia é obrigatório";
         break;
@@ -202,7 +316,7 @@ const AdoptPage = () => {
               <h2 className="text-xl font-semibold mb-4">Dados Pessoais</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
                     Nome Completo
                   </label>
                   <input
@@ -210,14 +324,14 @@ const AdoptPage = () => {
                     name="nome"
                     value={formData.nome}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   />
                   {errors.nome && (
                     <p className="mt-1 text-sm text-red-600">{errors.nome}</p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
                     Email
                   </label>
                   <input
@@ -225,14 +339,14 @@ const AdoptPage = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   />
                   {errors.email && (
                     <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
                     Telefone
                   </label>
                   <input
@@ -240,7 +354,7 @@ const AdoptPage = () => {
                     name="telefone"
                     value={formData.telefone}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   />
                   {errors.telefone && (
                     <p className="mt-1 text-sm text-red-600">
@@ -260,31 +374,127 @@ const AdoptPage = () => {
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
+                    CEP
+                  </label>
+                  <input
+                    type="text"
+                    name="cep"
+                    value={formData.cep}
+                    onChange={handleCepChange}
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+                    placeholder="Digite o CEP"
+                    maxLength={8}
+                  />
+                  {errors.cep && (
+                    <p className="mt-1 text-sm text-red-600">{errors.cep}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
+                    Estado
+                  </label>
+                  <select
+                    name="estado"
+                    value={
+                      estados.find((s) => s.nome === formData.estado)?.id || ""
+                    }
+                    onChange={handleEstadoChange}
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+                  >
+                    <option value="">Selecione um estado</option>
+                    {estados.map((estado) => (
+                      <option key={estado.id} value={estado.id}>
+                        {estado.nome}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.estado && (
+                    <p className="mt-1 text-sm text-red-600">{errors.estado}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
+                    Cidade
+                  </label>
+                  <select
+                    name="cidade"
+                    value={formData.cidade}
+                    onChange={(e) =>
+                      setFormData({ ...formData, cidade: e.target.value })
+                    }
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+                    disabled={!formData.estado}
+                  >
+                    <option value="">Selecione uma cidade</option>
+                    {cidades.map((cidade) => (
+                      <option key={cidade.id} value={cidade.nome}>
+                        {cidade.nome}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.cidade && (
+                    <p className="mt-1 text-sm text-red-600">{errors.cidade}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
                     Endereço Completo
                   </label>
-                  <textarea
-                    name="endereco"
-                    value={formData.endereco}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <input
+                        type="text"
+                        name="endereco"
+                        value={formData.endereco}
+                        onChange={handleInputChange}
+                        className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+                        placeholder="Rua"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        name="numero"
+                        value={formData.numero}
+                        onChange={handleInputChange}
+                        className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+                        placeholder="Número"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <input
+                        type="text"
+                        name="complemento"
+                        value={formData.complemento}
+                        onChange={handleInputChange}
+                        className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+                        placeholder="Complemento (opcional)"
+                      />
+                    </div>
+                  </div>
                   {errors.endereco && (
                     <p className="mt-1 text-sm text-red-600">
                       {errors.endereco}
                     </p>
                   )}
+                  {errors.numero && (
+                    <p className="mt-1 text-sm text-red-600">{errors.numero}</p>
+                  )}
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
                     Tipo de Moradia
                   </label>
                   <select
                     name="moradia"
                     value={formData.moradia}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   >
                     <option value="">Selecione uma opção</option>
                     <option value="casa">Casa</option>
@@ -309,14 +519,14 @@ const AdoptPage = () => {
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
                     Você já teve pets antes?
                   </label>
                   <select
                     name="experiencia"
                     value={formData.experiencia}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   >
                     <option value="">Selecione uma opção</option>
                     <option value="sim">Sim</option>
@@ -324,7 +534,7 @@ const AdoptPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
                     Possui outros pets atualmente?
                   </label>
                   <textarea
@@ -332,12 +542,12 @@ const AdoptPage = () => {
                     value={formData.outrosPets}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                     placeholder="Descreva os pets que você já possui, se houver"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-lg font-medium text-gray-700 mb-2">
                     Por que você quer adotar este pet?
                   </label>
                   <textarea
@@ -345,7 +555,7 @@ const AdoptPage = () => {
                     value={formData.motivoAdocao}
                     onChange={handleInputChange}
                     rows={4}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
                   />
                   {errors.motivoAdocao && (
                     <p className="mt-1 text-sm text-red-600">
