@@ -489,22 +489,22 @@ const ServiceSchedulePage = () => {
 
                 <div className="grid grid-cols-7 gap-1">{renderCalendar()}</div>
 
-                <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-teal-600"></div>
-                    <span>Data selecionada</span>
+                    <div className="w-3 h-3 rounded-full bg-teal-600 shrink-0"></div>
+                    <span className="truncate">Data selecionada</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-gray-200"></div>
-                    <span>Data disponível</span>
+                    <div className="w-3 h-3 rounded-full bg-gray-200 shrink-0"></div>
+                    <span className="truncate">Data disponível</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-gray-100"></div>
-                    <span>Data indisponível</span>
+                    <div className="w-3 h-3 rounded-full bg-gray-100 shrink-0"></div>
+                    <span className="truncate">Data indisponível</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-gray-300"></div>
-                    <span>Dia fechado</span>
+                    <div className="w-3 h-3 rounded-full bg-gray-300 shrink-0"></div>
+                    <span className="truncate">Dia fechado</span>
                   </div>
                 </div>
 

@@ -848,7 +848,10 @@ const OnboardingOngPage = () => {
         <label className="block text-lg font-medium text-gray-700 mb-4">
           Dias de Funcionamento
         </label>
-        <div className="grid grid-cols-7 gap-2">
+        <div
+          className="grid xs:grid-cols-7 gap-2"
+          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(70px, 1fr))" }}
+        >
           {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => {
             const isSelected = formData.openingHours[0].weekDays.includes(
               dayToNumber(day)
@@ -865,7 +868,7 @@ const OnboardingOngPage = () => {
                 type="button"
                 onClick={() => handleDayToggle(day)}
                 disabled={isDisabled}
-                className={`p-4 rounded-lg text-center font-medium transition-all duration-200 ${
+                className={`p-2 sm:p-4 rounded-lg text-center text-sm sm:text-base font-medium transition-all duration-200 ${
                   isSelected
                     ? "bg-teal-600 text-white"
                     : isDisabled
@@ -884,28 +887,32 @@ const OnboardingOngPage = () => {
         <label className="block text-lg font-medium text-gray-700 mb-4">
           Horário de Funcionamento
         </label>
-        <div className="flex items-center space-x-4">
-          <input
-            type="time"
-            value={formData.openingHours[0].opening}
-            onChange={(e) =>
-              handleSpecialHoursUpdate(0, "opening", e.target.value)
-            }
-            onFocus={(e) => setPreviousTimeValue(e.target.value)}
-            onBlur={(e) => validateTimeRange(0, "opening", e.target.value)}
-            className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
-          />
-          <span className="text-gray-600">até</span>
-          <input
-            type="time"
-            value={formData.openingHours[0].closing}
-            onChange={(e) =>
-              handleSpecialHoursUpdate(0, "closing", e.target.value)
-            }
-            onFocus={(e) => setPreviousTimeValue(e.target.value)}
-            onBlur={(e) => validateTimeRange(0, "closing", e.target.value)}
-            className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
-          />
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+          <div className="w-full sm:w-[180px]">
+            <input
+              type="time"
+              value={formData.openingHours[0].opening}
+              onChange={(e) =>
+                handleSpecialHoursUpdate(0, "opening", e.target.value)
+              }
+              onFocus={(e) => setPreviousTimeValue(e.target.value)}
+              onBlur={(e) => validateTimeRange(0, "opening", e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+            />
+          </div>
+          <span className="text-gray-600 text-center py-2">até</span>
+          <div className="w-full sm:w-[180px]">
+            <input
+              type="time"
+              value={formData.openingHours[0].closing}
+              onChange={(e) =>
+                handleSpecialHoursUpdate(0, "closing", e.target.value)
+              }
+              onFocus={(e) => setPreviousTimeValue(e.target.value)}
+              onBlur={(e) => validateTimeRange(0, "closing", e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+            />
+          </div>
         </div>
       </div>
 
@@ -965,7 +972,12 @@ const OnboardingOngPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Dias
                 </label>
-                <div className="grid grid-cols-7 gap-2">
+                <div
+                  className="grid xs:grid-cols-7 gap-2"
+                  style={{
+                    gridTemplateColumns: "repeat(auto-fit, minmax(70px, 1fr))",
+                  }}
+                >
                   {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(
                     (day) => {
                       const dayNumber = dayToNumber(day);
@@ -1002,40 +1014,44 @@ const OnboardingOngPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Horário
                 </label>
-                <div className="flex items-center space-x-4">
-                  <input
-                    type="time"
-                    value={special.opening}
-                    onChange={(e) =>
-                      handleSpecialHoursUpdate(
-                        index + 1,
-                        "opening",
-                        e.target.value
-                      )
-                    }
-                    onFocus={(e) => setPreviousTimeValue(e.target.value)}
-                    onBlur={(e) =>
-                      validateTimeRange(index + 1, "opening", e.target.value)
-                    }
-                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                  />
-                  <span className="text-gray-600">até</span>
-                  <input
-                    type="time"
-                    value={special.closing}
-                    onChange={(e) =>
-                      handleSpecialHoursUpdate(
-                        index + 1,
-                        "closing",
-                        e.target.value
-                      )
-                    }
-                    onFocus={(e) => setPreviousTimeValue(e.target.value)}
-                    onBlur={(e) =>
-                      validateTimeRange(index + 1, "closing", e.target.value)
-                    }
-                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                  />
+                <div className="flex flex-col sm:flex-row items-center gap-2">
+                  <div className="w-full sm:w-[180px]">
+                    <input
+                      type="time"
+                      value={special.opening}
+                      onChange={(e) =>
+                        handleSpecialHoursUpdate(
+                          index + 1,
+                          "opening",
+                          e.target.value
+                        )
+                      }
+                      onFocus={(e) => setPreviousTimeValue(e.target.value)}
+                      onBlur={(e) =>
+                        validateTimeRange(index + 1, "opening", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                  <span className="text-gray-600 text-center py-2">até</span>
+                  <div className="w-full sm:w-[180px]">
+                    <input
+                      type="time"
+                      value={special.closing}
+                      onChange={(e) =>
+                        handleSpecialHoursUpdate(
+                          index + 1,
+                          "closing",
+                          e.target.value
+                        )
+                      }
+                      onFocus={(e) => setPreviousTimeValue(e.target.value)}
+                      onBlur={(e) =>
+                        validateTimeRange(index + 1, "closing", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
