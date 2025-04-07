@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "NODE_ENV=development nodemon -r dotenv/config server.js dotenv_config_path=.env.development"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +31,6 @@
   "devDependencies": {
     "axios": "^1.8.4",
     "form-data": "^4.0.2",
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.9"
   }
 }

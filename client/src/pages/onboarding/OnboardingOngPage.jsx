@@ -570,9 +570,6 @@ const OnboardingOngPage = () => {
       const formDataToSend = new FormData();
 
       // Adicionar a imagem de perfil se existir
-      if (formData.profileImage) {
-        formDataToSend.append("profileImage", formData.profileImage);
-      }
 
       // Filtrar horários especiais vazios
       const filteredOpeningHours = formData.openingHours.filter(
@@ -582,6 +579,8 @@ const OnboardingOngPage = () => {
       );
 
       // Adicionar os outros dados
+      formDataToSend.append("profileImage", formData.profileImage);
+      formDataToSend.append("cep", formData.cep);
       formDataToSend.append("state", formData.state);
       formDataToSend.append("city", formData.city);
       formDataToSend.append("address", formData.address);
@@ -591,6 +590,18 @@ const OnboardingOngPage = () => {
         "openingHours",
         JSON.stringify(filteredOpeningHours)
       );
+
+      // console log para ver se os dados estão sendo enviados corretamente
+      console.log({
+        profileImage: formData.profileImage,
+        cep: formData.cep,
+        state: formData.state,
+        city: formData.city,
+        address: formData.address,
+        number: formData.number,
+        complement: formData.complement,
+        openingHours: filteredOpeningHours,
+      });
 
       // Enviar os dados para a API
       const response = await api.patch("/api/ong/onboarding", formDataToSend, {
