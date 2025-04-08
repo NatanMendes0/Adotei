@@ -27,7 +27,8 @@ const SuccessPage = () => {
               <li className="flex items-start">
                 <span className="flex-shrink-0 h-5 w-5 text-teal-500">1.</span>
                 <span className="ml-2 text-gray-600">
-                  A ONG analisará seu formulário de adoção
+                  A ONG analisará seu formulário de adoção e suas respostas às
+                  perguntas personalizadas
                 </span>
               </li>
               <li className="flex items-start">

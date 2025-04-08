@@ -56,6 +56,93 @@ const mockPets = [
       "Disponibilidade para passeios diários",
       "Aceitação de visitas pós-adoção",
     ],
+    customQuestions: [
+      {
+        question: "Qual a sua idade?",
+        type: "number",
+        required: true,
+      },
+      {
+        question: "Você tem experiência com animais?",
+        type: "single_choice",
+        options: ["Sim", "Não"],
+        required: true,
+      },
+      //tela em apartamento
+      {
+        question: "Você mora em apartamento?",
+        type: "single_choice",
+        options: ["Sim", "Não"],
+        required: true,
+      },
+      {
+        question:
+          "Caso mora em apartamento, você tem espaço para o pet brincar?",
+        type: "single_choice",
+        options: ["Sim", "Não"],
+        required: true,
+      },
+      {
+        question: "Quais animais você já teve?",
+        type: "multiple_choice",
+        options: ["Cachorro", "Gato", "Peixe", "Outro"],
+        required: true,
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: "Luna",
+    type: "Gato",
+    breed: "Siamês",
+    age: "1 ano",
+    size: "Pequeno",
+    gender: "Fêmea",
+    description:
+      "Gata muito carinhosa e tranquila, adora ficar no colo e receber carinho.",
+    images: [
+      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=800&q=80",
+    ],
+    ongName: "Amigos dos Pets SP",
+    location: "São Paulo, SP",
+    longDescription: `
+      Luna é uma gata muito especial que chegou à nossa ONG após ser resgatada da rua.
+      Ela é extremamente carinhosa e adora interagir com pessoas.
+      
+      Características:
+      • Muito carinhosa
+      • Adora ficar no colo
+      • Sociável com outros gatos
+      • Treinada para usar a caixa de areia
+      • Castrada e vacinada
+      
+      Luna está em busca de um lar amoroso onde possa receber muito carinho e atenção.
+      Ela se adapta bem a apartamentos e casas.
+    `,
+    characteristics: [
+      "Castrada",
+      "Vacinada",
+      "Vermifugada",
+      "Microchipada",
+      "Treinada para usar a caixa de areia",
+      "Sociável com outros animais",
+      "Boa com crianças",
+    ],
+    contact: {
+      phone: "(11) 99999-9999",
+      email: "contato@amigosdospetssp.com.br",
+      address: "Rua dos Pets, 123 - Vila Animal - São Paulo/SP",
+    },
+    requirements: [
+      "Compromisso com o bem-estar do animal",
+      "Casa/apartamento adequado para o tamanho do pet",
+      "Disponibilidade para brincadeiras diárias",
+      "Aceitação de visitas pós-adoção",
+    ],
+    // Sem perguntas customizadas para testar o comportamento
+    customQuestions: [],
   },
 ];
 
@@ -78,6 +165,7 @@ const AdoptPage = () => {
     outrosPets: "",
     motivoAdocao: "",
     termosAceitos: false,
+    customAnswers: {},
   });
   const [step, setStep] = useState(1);
   const [estados, setEstados] = useState([]);
@@ -202,6 +290,10 @@ const AdoptPage = () => {
   const validateStep = (currentStep) => {
     const errors = {};
 
+    // Determinar o passo de confirmação com base na existência de perguntas customizadas
+    const confirmationStep =
+      pet.customQuestions && pet.customQuestions.length > 0 ? 5 : 4;
+
     switch (currentStep) {
       case 1:
         if (!formData.nome) errors.nome = "Nome é obrigatório";
@@ -221,10 +313,47 @@ const AdoptPage = () => {
           errors.motivoAdocao = "Motivo da adoção é obrigatório";
         break;
       case 4:
+        // Validar respostas das perguntas personalizadas apenas se existirem
+        if (pet.customQuestions && pet.customQuestions.length > 0) {
+          pet.customQuestions.forEach((question, index) => {
+            if (question.required) {
+              const answer = formData.customAnswers[index];
+
+              // Verificar se a resposta está vazia com base no tipo de pergunta
+              let isEmpty = false;
+
+              if (!answer) {
+                isEmpty = true;
+              } else if (Array.isArray(answer) && answer.length === 0) {
+                isEmpty = true;
+              } else if (typeof answer === "string" && answer.trim() === "") {
+                isEmpty = true;
+              } else if (
+                question.type === "number" &&
+                (isNaN(answer) || answer === "")
+              ) {
+                isEmpty = true;
+              }
+
+              if (isEmpty) {
+                errors[
+                  `custom_${index}`
+                ] = `A pergunta "${question.question}" é obrigatória`;
+              }
+            }
+          });
+        }
+        break;
+      case 5:
+        // Este caso só será executado se houver perguntas customizadas
         if (!formData.termosAceitos)
           errors.termosAceitos = "Você precisa aceitar os termos";
         break;
       default:
+        // Caso seja o passo de confirmação (4 ou 5, dependendo da existência de perguntas customizadas)
+        if (currentStep === confirmationStep && !formData.termosAceitos) {
+          errors.termosAceitos = "Você precisa aceitar os termos";
+        }
         break;
     }
 
@@ -241,6 +370,59 @@ const AdoptPage = () => {
 
   const handleNext = () => {
     if (validateStep(step)) {
+      // Verificar se há perguntas customizadas obrigatórias antes de avançar para o próximo passo
+      if (step === 3) {
+        // Verificar se existem perguntas customizadas
+        if (pet.customQuestions && pet.customQuestions.length > 0) {
+          const hasRequiredQuestions = pet.customQuestions.some(
+            (q) => q.required
+          );
+          if (hasRequiredQuestions) {
+            setStep(4); // Avançar para a etapa de perguntas customizadas
+            return;
+          }
+        }
+        // Se não houver perguntas customizadas ou se não houver perguntas obrigatórias,
+        // pular para a etapa de confirmação (que será o passo 4)
+        setStep(4);
+        return;
+      }
+
+      // Verificar se todas as perguntas obrigatórias foram respondidas na etapa 4
+      if (step === 4 && pet.customQuestions && pet.customQuestions.length > 0) {
+        const hasUnansweredRequiredQuestions = pet.customQuestions.some(
+          (question, index) => {
+            if (!question.required) return false;
+
+            const answer = formData.customAnswers[index];
+
+            // Verificar se a resposta está vazia com base no tipo de pergunta
+            if (!answer) return true;
+            if (Array.isArray(answer) && answer.length === 0) return true;
+            if (typeof answer === "string" && answer.trim() === "") return true;
+            if (question.type === "number" && (isNaN(answer) || answer === ""))
+              return true;
+
+            return false;
+          }
+        );
+
+        if (hasUnansweredRequiredQuestions) {
+          toast.error(
+            "Por favor, responda todas as perguntas obrigatórias antes de continuar."
+          );
+          return;
+        }
+      }
+
+      // Verificar se o usuário aceitou os termos na etapa de confirmação
+      const confirmationStep =
+        pet.customQuestions && pet.customQuestions.length > 0 ? 5 : 4;
+      if (step === confirmationStep && !formData.termosAceitos) {
+        toast.error("Você precisa aceitar os termos para continuar.");
+        return;
+      }
+
       setStep((prev) => prev + 1);
     }
   };
@@ -279,36 +461,47 @@ const AdoptPage = () => {
         {/* Progresso */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            {[1, 2, 3, 4].map((stepNumber) => (
-              <div
-                key={stepNumber}
-                className={`flex items-center ${
-                  stepNumber < 4 ? "flex-1" : ""
-                }`}
-              >
+            {(() => {
+              // Determinar quais passos mostrar com base na existência de perguntas customizadas
+              const steps =
+                pet.customQuestions && pet.customQuestions.length > 0
+                  ? [1, 2, 3, 4, 5]
+                  : [1, 2, 3, 4];
+
+              return steps.map((stepNumber, index) => (
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step >= stepNumber
-                      ? "bg-teal-600 text-white"
-                      : "bg-gray-200 text-gray-600"
+                  key={stepNumber}
+                  className={`flex items-center ${
+                    index < steps.length - 1 ? "flex-1" : ""
                   }`}
                 >
-                  {stepNumber}
-                </div>
-                {stepNumber < 4 && (
                   <div
-                    className={`flex-1 h-1 mx-2 ${
-                      step > stepNumber ? "bg-teal-600" : "bg-gray-200"
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      step >= stepNumber
+                        ? "bg-teal-600 text-white"
+                        : "bg-gray-200 text-gray-600"
                     }`}
-                  />
-                )}
-              </div>
-            ))}
+                  >
+                    {stepNumber}
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`flex-1 h-1 mx-2 ${
+                        step > stepNumber ? "bg-teal-600" : "bg-gray-200"
+                      }`}
+                    />
+                  )}
+                </div>
+              ));
+            })()}
           </div>
           <div className="flex justify-between mt-2 text-sm text-gray-600">
             <span>Dados Pessoais</span>
             <span>Moradia</span>
             <span>Experiência</span>
+            {pet.customQuestions && pet.customQuestions.length > 0 && (
+              <span>Perguntas</span>
+            )}
             <span>Confirmação</span>
           </div>
         </div>
@@ -534,8 +727,117 @@ const AdoptPage = () => {
             </div>
           )}
 
-          {/* Step 4: Confirmação */}
-          {step === 4 && (
+          {/* Step 4: Perguntas Personalizadas */}
+          {step === 4 &&
+            pet.customQuestions &&
+            pet.customQuestions.length > 0 && (
+              <div className="bg-white shadow rounded-lg p-6">
+                <h2 className="text-xl font-semibold mb-4">Perguntas da ONG</h2>
+                <div className="space-y-4">
+                  {pet.customQuestions.map((question, index) => (
+                    <div key={index}>
+                      <label className="block text-lg font-medium text-gray-700 mb-2">
+                        {question.question}
+                        {question.required && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                      </label>
+                      {question.type === "text" && (
+                        <textarea
+                          value={formData.customAnswers[index] || ""}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              customAnswers: {
+                                ...prev.customAnswers,
+                                [index]: e.target.value,
+                              },
+                            }))
+                          }
+                          rows={3}
+                          className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+                        />
+                      )}
+                      {question.type === "number" && (
+                        <input
+                          type="number"
+                          value={formData.customAnswers[index] || ""}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              customAnswers: {
+                                ...prev.customAnswers,
+                                [index]: e.target.value,
+                              },
+                            }))
+                          }
+                          className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                      )}
+                      {question.type === "single_choice" && (
+                        <select
+                          value={formData.customAnswers[index] || ""}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              customAnswers: {
+                                ...prev.customAnswers,
+                                [index]: e.target.value,
+                              },
+                            }))
+                          }
+                          className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
+                        >
+                          <option value="">Selecione uma opção</option>
+                          {question.options.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      {question.type === "multiple_choice" && (
+                        <div className="space-y-2">
+                          {question.options.map((option) => (
+                            <label key={option} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={(
+                                  formData.customAnswers[index] || []
+                                ).includes(option)}
+                                onChange={(e) => {
+                                  const currentAnswers =
+                                    formData.customAnswers[index] || [];
+                                  const newAnswers = e.target.checked
+                                    ? [...currentAnswers, option]
+                                    : currentAnswers.filter(
+                                        (a) => a !== option
+                                      );
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    customAnswers: {
+                                      ...prev.customAnswers,
+                                      [index]: newAnswers,
+                                    },
+                                  }));
+                                }}
+                                className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                              />
+                              <span className="ml-2 text-gray-700">
+                                {option}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          {/* Step 5: Confirmação */}
+          {step === 5 && (
             <div className="bg-white shadow rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">Confirmação</h2>
               <div className="space-y-4">
@@ -589,7 +891,8 @@ const AdoptPage = () => {
                 Voltar
               </button>
             )}
-            {step < 4 ? (
+            {step <
+            (pet.customQuestions && pet.customQuestions.length > 0 ? 5 : 4) ? (
               <button
                 type="button"
                 onClick={handleNext}
