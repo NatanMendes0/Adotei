@@ -21,6 +21,8 @@ const OnboardingOngPage = () => {
     address: "",
     number: "",
     complement: "",
+    phones: [{ numero: "", principal: true }],
+    emails: [{ endereco: "", principal: true }],
     openingHours: [
       {
         specialHour: false,
@@ -197,6 +199,10 @@ const OnboardingOngPage = () => {
   const validateStep1 = () => {
     if (!formData.profileImage) {
       toast.error("Por favor, selecione uma foto de perfil");
+      return false;
+    }
+
+    if (!validateContacts()) {
       return false;
     }
 
@@ -628,12 +634,164 @@ const OnboardingOngPage = () => {
     }
   };
 
+  // Funções para gerenciar telefones
+  const handleAddPhone = () => {
+    setFormData((prev) => ({
+      ...prev,
+      phones: [...prev.phones, { numero: "", principal: false }],
+    }));
+  };
+
+  const handleRemovePhone = (index) => {
+    if (formData.phones.length > 1) {
+      const newPhones = formData.phones.filter((_, i) => i !== index);
+      // Se removemos o telefone principal, definimos o primeiro como principal
+      if (formData.phones[index].principal && newPhones.length > 0) {
+        newPhones[0].principal = true;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        phones: newPhones,
+      }));
+    }
+  };
+
+  const handlePhoneChange = (index, value) => {
+    const cleaned = value.replace(/\D/g, "");
+    let formatted = cleaned;
+
+    if (cleaned.length >= 11) {
+      formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(
+        2,
+        7
+      )}-${cleaned.slice(7, 11)}`;
+    } else if (cleaned.length >= 7) {
+      formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(
+        2,
+        7
+      )}-${cleaned.slice(7)}`;
+    } else if (cleaned.length >= 2) {
+      formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+    }
+
+    const newPhones = [...formData.phones];
+    newPhones[index] = { ...newPhones[index], numero: formatted };
+    setFormData((prev) => ({
+      ...prev,
+      phones: newPhones,
+    }));
+  };
+
+  const handleSetMainPhone = (index) => {
+    const newPhones = formData.phones.map((phone, i) => ({
+      ...phone,
+      principal: i === index,
+    }));
+    setFormData((prev) => ({
+      ...prev,
+      phones: newPhones,
+    }));
+  };
+
+  // Funções para gerenciar emails
+  const handleAddEmail = () => {
+    setFormData((prev) => ({
+      ...prev,
+      emails: [...prev.emails, { endereco: "", principal: false }],
+    }));
+  };
+
+  const handleRemoveEmail = (index) => {
+    if (formData.emails.length > 1) {
+      const newEmails = formData.emails.filter((_, i) => i !== index);
+      // Se removemos o email principal, definimos o primeiro como principal
+      if (formData.emails[index].principal && newEmails.length > 0) {
+        newEmails[0].principal = true;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        emails: newEmails,
+      }));
+    }
+  };
+
+  const handleEmailChange = (index, value) => {
+    const newEmails = [...formData.emails];
+    newEmails[index] = { ...newEmails[index], endereco: value };
+    setFormData((prev) => ({
+      ...prev,
+      emails: newEmails,
+    }));
+  };
+
+  const handleSetMainEmail = (index) => {
+    const newEmails = formData.emails.map((email, i) => ({
+      ...email,
+      principal: i === index,
+    }));
+    setFormData((prev) => ({
+      ...prev,
+      emails: newEmails,
+    }));
+  };
+
+  // Validação dos contatos
+  const validateContacts = () => {
+    // Validar telefones
+    const hasValidPhone = formData.phones.some((phone) => {
+      const digits = phone.numero.replace(/\D/g, "");
+      return digits.length >= 10 && digits.length <= 11;
+    });
+
+    if (!hasValidPhone) {
+      toast.error("Adicione pelo menos um telefone válido");
+      return false;
+    }
+
+    // Validar telefone principal
+    const mainPhone = formData.phones.find((phone) => phone.principal);
+    if (!mainPhone || !mainPhone.numero) {
+      toast.error("O telefone principal não pode estar vazio");
+      return false;
+    }
+
+    const mainPhoneDigits = mainPhone.numero.replace(/\D/g, "");
+    if (mainPhoneDigits.length < 10 || mainPhoneDigits.length > 11) {
+      toast.error("O telefone principal deve ser um número válido");
+      return false;
+    }
+
+    // Validar emails
+    const hasValidEmail = formData.emails.some((email) => {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.endereco);
+    });
+
+    if (!hasValidEmail) {
+      toast.error("Adicione pelo menos um e-mail válido");
+      return false;
+    }
+
+    // Validar email principal
+    const mainEmail = formData.emails.find((email) => email.principal);
+    if (!mainEmail || !mainEmail.endereco) {
+      toast.error("O e-mail principal não pode estar vazio");
+      return false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mainEmail.endereco)) {
+      toast.error("O e-mail principal deve ser um e-mail válido");
+      return false;
+    }
+
+    return true;
+  };
+
   const renderStep1 = () => (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-6"
     >
       <div>
         <label className="block text-lg font-medium text-gray-700 mb-2">
@@ -772,6 +930,166 @@ const OnboardingOngPage = () => {
               className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-lg"
               placeholder="Complemento (opcional)"
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Seção de Contatos */}
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Contatos</h3>
+
+          {/* Telefones */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Telefones
+              </label>
+              <button
+                type="button"
+                onClick={handleAddPhone}
+                className="text-sm text-teal-600 hover:text-teal-700 flex items-center"
+              >
+                <svg
+                  className="h-5 w-5 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                Adicionar telefone
+              </button>
+            </div>
+            <div className="space-y-3">
+              {formData.phones.map((phone, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={phone.numero}
+                      onChange={(e) => handlePhoneChange(index, e.target.value)}
+                      className="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      placeholder="(00) 00000-0000"
+                      maxLength={15}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSetMainPhone(index)}
+                    className={`px-3 py-2 rounded-lg text-sm ${
+                      phone.principal
+                        ? "bg-teal-100 text-teal-800"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    Principal
+                  </button>
+                  {formData.phones.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePhone(index)}
+                      className="p-2 text-red-600 hover:text-red-700"
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* E-mails */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                E-mails
+              </label>
+              <button
+                type="button"
+                onClick={handleAddEmail}
+                className="text-sm text-teal-600 hover:text-teal-700 flex items-center"
+              >
+                <svg
+                  className="h-5 w-5 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                Adicionar e-mail
+              </button>
+            </div>
+            <div className="space-y-3">
+              {formData.emails.map((email, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="email"
+                      value={email.endereco}
+                      onChange={(e) => handleEmailChange(index, e.target.value)}
+                      className="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      placeholder="email@exemplo.com"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSetMainEmail(index)}
+                    className={`px-3 py-2 rounded-lg text-sm ${
+                      email.principal
+                        ? "bg-teal-100 text-teal-800"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    Principal
+                  </button>
+                  {formData.emails.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveEmail(index)}
+                      className="p-2 text-red-600 hover:text-red-700"
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
