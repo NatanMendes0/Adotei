@@ -15,50 +15,54 @@ const OngLayout = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/ongs/dashboard" className="flex items-center">
-              <img
-                src={logo}
-                alt="Adotei Logo"
-                className="h-10 w-40 md:h-12 md:w-48 lg:h-14 lg:w-56"
-              />
-            </Link>
+            <div className="w-1/4">
+              <Link to="/ongs/dashboard" className="flex items-center">
+                <img
+                  src={logo}
+                  alt="Adotei Logo"
+                  className="h-10 w-40 md:h-12 md:w-48 lg:h-14 lg:w-56"
+                />
+              </Link>
+            </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8">
-              <Link
-                to="/ongs/calendario"
-                className={`text-sm font-medium ${
-                  location.pathname === "/ongs/calendario"
-                    ? "text-white"
-                    : "text-teal-100 hover:text-white"
-                }`}
-              >
-                Calendário
-              </Link>
-              <Link
-                to="/ongs/servicos"
-                className={`text-sm font-medium ${
-                  location.pathname === "/ongs/servicos"
-                    ? "text-white"
-                    : "text-teal-100 hover:text-white"
-                }`}
-              >
-                Serviços
-              </Link>
-              <Link
-                to="/ongs/pets"
-                className={`text-sm font-medium ${
-                  location.pathname === "/ongs/pets"
-                    ? "text-white"
-                    : "text-teal-100 hover:text-white"
-                }`}
-              >
-                Pets
-              </Link>
+            {/* Desktop Navigation - Centralizado */}
+            <nav className="hidden lg:flex items-center justify-center w-2/4">
+              <div className="flex items-center space-x-8">
+                <Link
+                  to="/ongs/calendario"
+                  className={`text-sm font-medium ${
+                    location.pathname === "/ongs/calendario"
+                      ? "text-white"
+                      : "text-teal-100 hover:text-white"
+                  }`}
+                >
+                  Calendário
+                </Link>
+                <Link
+                  to="/ongs/servicos"
+                  className={`text-sm font-medium ${
+                    location.pathname === "/ongs/servicos"
+                      ? "text-white"
+                      : "text-teal-100 hover:text-white"
+                  }`}
+                >
+                  Serviços
+                </Link>
+                <Link
+                  to="/ongs/pets"
+                  className={`text-sm font-medium ${
+                    location.pathname === "/ongs/pets"
+                      ? "text-white"
+                      : "text-teal-100 hover:text-white"
+                  }`}
+                >
+                  Pets
+                </Link>
+              </div>
             </nav>
 
             {/* Desktop Action Buttons */}
-            <div className="hidden lg:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center justify-end w-1/4">
               <button
                 onClick={signOut}
                 className="bg-white text-teal-600 px-4 py-2 rounded-lg hover:bg-teal-50 transition-colors text-sm font-medium"
@@ -103,6 +107,17 @@ const OngLayout = () => {
             <div className="lg:hidden py-4">
               <nav className="flex flex-col space-y-4">
                 <Link
+                  to="/ongs/dashboard"
+                  className={`text-sm font-medium ${
+                    location.pathname === "/ongs/dashboard"
+                      ? "text-white"
+                      : "text-teal-100 hover:text-white"
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
                   to="/ongs/calendario"
                   className={`text-sm font-medium ${
                     location.pathname === "/ongs/calendario"
@@ -135,17 +150,15 @@ const OngLayout = () => {
                 >
                   Pets
                 </Link>
-                <div className="pt-4 border-t border-teal-500">
-                  <button
-                    onClick={() => {
-                      signOut();
-                      setIsMenuOpen(false);
-                    }}
-                    className="block w-full text-center bg-white text-teal-600 px-4 py-2 rounded-lg hover:bg-teal-50 transition-colors text-sm font-medium"
-                  >
-                    Sair
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    signOut();
+                    setIsMenuOpen(false);
+                  }}
+                  className="bg-white text-teal-600 px-4 py-2 rounded-lg hover:bg-teal-50 transition-colors text-sm font-medium w-full text-left"
+                >
+                  Sair
+                </button>
               </nav>
             </div>
           )}
@@ -153,7 +166,7 @@ const OngLayout = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow bg-gray-50">
+      <main className="flex-1">
         <Outlet />
       </main>
 

@@ -12,7 +12,9 @@ import NotFound from "./pages/not-found/NotFound";
 import OnboardingOngPage from "./pages/onboarding/OnboardingOngPage";
 import OngCalendarioPage from "./pages/ongs/calendario/OngCalendarioPage";
 import OngDashboardPage from "./pages/ongs/dashboard/OngDashboardPage";
+import NovoPetPage from "./pages/ongs/pets/novo/NovoPetPage";
 import OngPetsPage from "./pages/ongs/pets/OngPetsPage";
+import NovoServicoPage from "./pages/ongs/servicos/novo/NovoServicoPage";
 import OngServicosPage from "./pages/ongs/servicos/OngServicosPage";
 import OngsPage from "./pages/para-ongs/OngsPage";
 import PetDetailsPage from "./pages/pets/_id/PetDetailsPage";
@@ -55,7 +57,9 @@ const AppRoutes = () => {
         <Route path="dashboard" element={<OngDashboardPage />} />
         <Route path="calendario" element={<OngCalendarioPage />} />
         <Route path="servicos" element={<OngServicosPage />} />
+        <Route path="servicos/novo" element={<NovoServicoPage />} />
         <Route path="pets" element={<OngPetsPage />} />
+        <Route path="pets/novo" element={<NovoPetPage />} />
         <Route path="onboarding" element={<OnboardingOngPage />} />
       </Route>
     </Routes>

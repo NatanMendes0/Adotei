@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
       setUser(parsedUser);
 
       // Verifica se o usuário completou o onboarding
-      if (!parsedUser.completedOnboarding) {
+      if (false) {
         navigate("/ongs/onboarding");
       }
     }

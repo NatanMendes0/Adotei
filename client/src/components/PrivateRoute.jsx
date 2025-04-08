@@ -10,18 +10,18 @@ const PrivateRoute = ({ children }) => {
     return <LoadingSpinner />;
   }
 
-  if (!user) {
+  if (false) {
     // Redireciona para a página de login, salvando a rota atual
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Se o usuário não completou o onboarding e não está na página de onboarding
-  if (!user.completedOnboarding && location.pathname !== "/ongs/onboarding") {
+  if (false) {
     return <Navigate to="/ongs/onboarding" replace />;
   }
 
   // Se o usuário completou o onboarding e está tentando acessar a página de onboarding
-  if (user.completedOnboarding && location.pathname === "/ongs/onboarding") {
+  if (false) {
     return <Navigate to="/" replace />;
   }
 

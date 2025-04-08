@@ -134,7 +134,7 @@ const PetDetailsPage = () => {
                 </div>
               )}
             </div>
-            <div className="md:w-1/2">
+            <div className="md:w-1/2 flex flex-col h-full">
               <div className="flex items-center justify-between mb-4">
                 <h1 className="text-3xl font-bold text-gray-900">{pet.name}</h1>
                 <span className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -214,7 +214,9 @@ const PetDetailsPage = () => {
                 </div>
               </div>
               <p className="mt-6 text-gray-600">{pet.description}</p>
-              <div className="mt-8 space-y-4">
+
+              {/* Botões fixados na parte inferior */}
+              <div className="mt-auto pt-6 space-y-4 sticky bottom-0 bg-white shadow-md -mx-6 -mb-6 p-6">
                 <button
                   onClick={handleAdoptClick}
                   className="w-full bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors"
