@@ -382,68 +382,68 @@ const NovoPetPage = () => {
 
   // Componente de navegação entre etapas
   const StepNavigation = () => (
-    <div className="flex justify-between mt-8">
-      <button
-        type="button"
-        onClick={prevStep}
-        className={`px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors ${
-          currentStep === 1 ? "invisible" : ""
-        }`}
-      >
-        Voltar
-      </button>
-      <div className="flex gap-4">
+    <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <button
+          type="button"
+          onClick={prevStep}
+          className={`w-full sm:w-auto px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors ${
+            currentStep === 1 ? "invisible" : ""
+          }`}
+        >
+          Voltar
+        </button>
         <button
           type="button"
           onClick={() => navigate("/ongs/pets")}
-          className="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="w-full sm:w-auto px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
         >
           Cancelar
         </button>
-        {currentStep < 4 ? (
-          <button
-            type="button"
-            onClick={nextStep}
-            className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
-          >
-            Próximo
-          </button>
-        ) : (
-          <button
-            type="submit"
-            className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Cadastrando...
-              </>
-            ) : (
-              "Cadastrar Pet"
-            )}
-          </button>
-        )}
       </div>
+      {currentStep < 4 ? (
+        <button
+          type="button"
+          onClick={nextStep}
+          className="w-full sm:w-auto px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+        >
+          Próximo
+        </button>
+      ) : (
+        <button
+          type="submit"
+          className="w-full sm:w-auto px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Cadastrando...
+            </>
+          ) : (
+            "Cadastrar Pet"
+          )}
+        </button>
+      )}
     </div>
   );
 
@@ -558,22 +558,24 @@ const NovoPetPage = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Idade <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      name="idade"
-                      value={formData.idade}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                      placeholder="Ex: 2"
-                      min="0"
-                      required
-                    />
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        name="idade"
+                        value={formData.idade}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                        placeholder="Ex: 2"
+                        min="0"
+                        required
+                      />
+                    </div>
                     <select
                       name="idadeUnidade"
                       value={formData.idadeUnidade}
                       onChange={handleInputChange}
-                      className="w-1/3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                     >
                       <option value="anos">Anos</option>
                       <option value="meses">Meses</option>
@@ -835,12 +837,12 @@ const NovoPetPage = () => {
                   Características do Pet <span className="text-red-500">*</span>
                 </label>
                 <div className="mb-4">
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       value={novaTag}
                       onChange={(e) => setNovaTag(e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                       placeholder="Ex: Carinhoso"
                       disabled={formData.tags.length >= 8}
                       maxLength={30}
@@ -848,7 +850,7 @@ const NovoPetPage = () => {
                     <button
                       type="button"
                       onClick={addTag}
-                      className={`px-4 py-2 rounded-lg transition-colors ${
+                      className={`w-full sm:w-auto whitespace-nowrap px-4 py-2 rounded-lg transition-colors ${
                         !novaTag.trim() ||
                         formData.tags.length >= 8 ||
                         novaTag.trim().length < 3
@@ -916,12 +918,12 @@ const NovoPetPage = () => {
                   Requisitos para Adoção
                 </label>
                 <div className="mb-4">
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       value={novoRequisito}
                       onChange={(e) => setNovoRequisito(e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                       placeholder="Ex: Casa com quintal"
                       disabled={formData.requisitos.length >= 8}
                       maxLength={30}
@@ -929,7 +931,7 @@ const NovoPetPage = () => {
                     <button
                       type="button"
                       onClick={addRequisito}
-                      className={`px-4 py-2 rounded-lg transition-colors ${
+                      className={`w-full sm:w-auto whitespace-nowrap px-4 py-2 rounded-lg transition-colors ${
                         !novoRequisito.trim() ||
                         formData.requisitos.length >= 8 ||
                         novoRequisito.trim().length < 3
@@ -1003,13 +1005,14 @@ const NovoPetPage = () => {
                         })
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                      placeholder="Ex: Você tem experiência com pets?"
+                      placeholder="Ex: O pet tem alguma alergia?"
                       disabled={formData.perguntasCustomizadas.length >= 4}
                       maxLength={30}
                     />
                   </div>
 
-                  <div className="space-y-4">
+                  {/* Tipo de Resposta e Resposta Obrigatória */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Tipo de Resposta
@@ -1033,63 +1036,62 @@ const NovoPetPage = () => {
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Resposta obrigatória
+                    <div className="flex items-center">
+                      <label className="flex items-center cursor-pointer">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            checked={novaPergunta.obrigatoria}
+                            onChange={(e) =>
+                              setNovaPergunta({
+                                ...novaPergunta,
+                                obrigatoria: e.target.checked,
+                              })
+                            }
+                            className="sr-only"
+                          />
+                          <div
+                            className={`block w-10 h-6 rounded-full ${
+                              novaPergunta.obrigatoria
+                                ? "bg-teal-600"
+                                : "bg-gray-300"
+                            }`}
+                          ></div>
+                          <div
+                            className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
+                              novaPergunta.obrigatoria
+                                ? "transform translate-x-4"
+                                : ""
+                            }`}
+                          ></div>
+                        </div>
+                        <span className="ml-2 text-sm text-gray-700">
+                          Resposta obrigatória
+                        </span>
                       </label>
-                      <div className="flex items-center">
-                        <label className="flex items-center cursor-pointer">
-                          <div className="relative">
-                            <input
-                              type="checkbox"
-                              checked={novaPergunta.obrigatoria}
-                              onChange={(e) =>
-                                setNovaPergunta({
-                                  ...novaPergunta,
-                                  obrigatoria: e.target.checked,
-                                })
-                              }
-                              className="sr-only"
-                            />
-                            <div
-                              className={`block w-10 h-6 rounded-full ${
-                                novaPergunta.obrigatoria
-                                  ? "bg-teal-600"
-                                  : "bg-gray-300"
-                              }`}
-                            ></div>
-                            <div
-                              className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${
-                                novaPergunta.obrigatoria
-                                  ? "transform translate-x-4"
-                                  : ""
-                              }`}
-                            ></div>
-                          </div>
-                        </label>
-                      </div>
                     </div>
                   </div>
 
+                  {/* Opções de Resposta */}
                   {(novaPergunta.tipo === "single_choice" ||
                     novaPergunta.tipo === "multiple_choice") && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Opções de Resposta
                       </label>
-                      <div className="flex gap-2 mb-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="text"
                           value={novaOpcao}
                           onChange={(e) => setNovaOpcao(e.target.value)}
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                           placeholder="Ex: Sim"
                           maxLength={30}
                         />
                         <button
                           type="button"
                           onClick={addOpcao}
-                          className={`px-4 py-2 rounded-lg transition-colors ${
+                          className={`w-full sm:w-auto whitespace-nowrap px-4 py-2 rounded-lg transition-colors ${
                             !novaOpcao.trim() || novaOpcao.trim().length < 3
                               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                               : "bg-teal-600 text-white hover:bg-teal-700"
@@ -1103,34 +1105,36 @@ const NovoPetPage = () => {
                       </div>
 
                       {novaPergunta.opcoes.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {novaPergunta.opcoes.map((opcao, index) => (
-                            <div
-                              key={index}
-                              className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full flex items-center gap-2"
-                            >
-                              <span>{opcao}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeOpcao(index)}
-                                className="text-teal-600 hover:text-teal-800"
+                        <div className="mt-3">
+                          <div className="flex flex-wrap gap-2">
+                            {novaPergunta.opcoes.map((opcao, index) => (
+                              <div
+                                key={index}
+                                className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full flex items-center gap-2 text-sm"
                               >
-                                <svg
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
+                                <span className="break-all">{opcao}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeOpcao(index)}
+                                  className="text-teal-600 hover:text-teal-800 flex-shrink-0"
                                 >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
+                                  <svg
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M6 18L18 6M6 6l12 12"
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1140,7 +1144,7 @@ const NovoPetPage = () => {
                     <button
                       type="button"
                       onClick={addPergunta}
-                      className={`px-4 py-2 rounded-lg transition-colors ${
+                      className={`w-full sm:w-auto whitespace-nowrap px-4 py-2 rounded-lg transition-colors ${
                         !novaPergunta.pergunta.trim() ||
                         formData.perguntasCustomizadas.length >= 4 ||
                         (novaPergunta.tipo === "single_choice" &&
