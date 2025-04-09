@@ -1,4 +1,7 @@
 import { Link } from "react-router-dom";
+import aboutImage from "../../assets/about/about.webp";
+import headerImage from "../../assets/header/header.webp";
+import OptimizedImage from "../../components/OptimizedImage";
 
 const SobrePage = () => {
   return (
@@ -6,10 +9,12 @@ const SobrePage = () => {
       {/* Hero Section */}
       <div className="relative bg-teal-600">
         <div className="absolute inset-0">
-          <img
-            className="w-full h-full object-cover"
-            src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+          <OptimizedImage
+            src={headerImage}
             alt="Cachorros em abrigo"
+            className="w-full h-full object-cover"
+            width={1950}
+            height={1080}
           />
           <div className="absolute inset-0 bg-teal-600 mix-blend-multiply"></div>
         </div>
@@ -132,10 +137,12 @@ const SobrePage = () => {
             </div>
 
             <div className="mt-10 -mx-4 relative lg:mt-0">
-              <img
+              <OptimizedImage
                 className="relative mx-auto rounded-lg shadow-lg ring-1 ring-black ring-opacity-5"
-                src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+                src={aboutImage}
                 alt="ONG cuidando de pets"
+                width={1950}
+                height={1080}
               />
             </div>
           </div>

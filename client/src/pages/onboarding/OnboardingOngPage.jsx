@@ -4,7 +4,8 @@ import toast from "react-hot-toast";
 import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { useNavigate } from "react-router-dom";
-import onboardingImage from "../../assets/onboarding/2.png";
+import onboardingImage from "../../assets/onboarding/onboarding.webp";
+import OptimizedImage from "../../components/OptimizedImage";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
 
@@ -1518,7 +1519,7 @@ const OnboardingOngPage = () => {
               <div className="absolute inset-0 bg-teal-600 rounded-3xl transform rotate-3"></div>
               <div className="relative bg-white rounded-3xl p-8 shadow-xl">
                 <div className="aspect-w-4 aspect-h-3 rounded-lg overflow-hidden mb-6 h-96">
-                  <img
+                  <OptimizedImage
                     src={onboardingImage}
                     alt="Ilustração"
                     className="w-full h-full object-cover"

@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import homeImage from "../assets/home/home.webp";
+import OptimizedImage from "../components/OptimizedImage";
 import PetCard from "../components/PetCard";
 import { pets } from "../data/pets";
 
@@ -87,10 +89,12 @@ const HomePage = () => {
         </div>
         <div className="md:w-1/2 md:pl-12">
           <div className="relative">
-            <img
-              src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?auto=format&fit=crop&w=800&q=80"
+            <OptimizedImage
+              src={homeImage}
               alt="Família feliz com seu pet adotado"
               className="rounded-2xl shadow-2xl"
+              width={800}
+              height={600}
             />
             <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-lg shadow-lg">
               <div className="flex items-center gap-3">

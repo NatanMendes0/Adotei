@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import headerImage from "../../assets/header/header.webp";
+import OptimizedImage from "../../components/OptimizedImage";
 
 const OngsPage = () => {
   return (
@@ -6,10 +8,12 @@ const OngsPage = () => {
       {/* Hero Section */}
       <div className="relative bg-teal-600">
         <div className="absolute inset-0">
-          <img
-            className="w-full h-full object-cover"
-            src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+          <OptimizedImage
+            src={headerImage}
             alt="Cachorros em abrigo"
+            className="w-full h-full object-cover"
+            width={1950}
+            height={1080}
           />
           <div className="absolute inset-0 bg-teal-600 mix-blend-multiply"></div>
         </div>
@@ -22,14 +26,6 @@ const OngsPage = () => {
             sempre. Cadastre sua ONG e comece a gerenciar seus pets de forma
             simples e eficiente.
           </p>
-          <div className="mt-10">
-            <Link
-              to="/cadastro-ong"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-teal-600 bg-white hover:bg-teal-50"
-            >
-              Cadastrar ONG
-            </Link>
-          </div>
         </div>
       </div>
 
