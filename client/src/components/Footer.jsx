@@ -102,28 +102,6 @@ const Footer = () => {
               </li>
             </ul> */}
           </div>
-
-          {/* Newsletter */}
-          <div>
-            <h3 className="text-xl font-bold mb-4">Newsletter</h3>
-            <p className="text-gray-400 mb-4">
-              Receba novidades e atualizações sobre pets disponíveis para
-              adoção.
-            </p>
-            <form className="flex">
-              <input
-                type="email"
-                placeholder="Seu melhor email"
-                className="flex-1 px-4 py-2 rounded-l-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-              <button
-                type="submit"
-                className="bg-teal-600 text-white px-4 py-2 rounded-r-lg hover:bg-teal-700 transition-colors"
-              >
-                Inscrever
-              </button>
-            </form>
-          </div>
         </div>
 
         {/* Copyright */}

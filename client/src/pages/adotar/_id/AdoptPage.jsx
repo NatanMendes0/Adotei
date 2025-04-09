@@ -495,14 +495,14 @@ const AdoptPage = () => {
               ));
             })()}
           </div>
-          <div className="flex justify-between mt-2 text-sm text-gray-600">
-            <span>Dados Pessoais</span>
-            <span>Moradia</span>
-            <span>Experiência</span>
+          <div className="grid grid-cols-5 gap-1 mt-2 text-xs md:text-sm text-gray-600 md:flex md:justify-between">
+            <div className="text-center md:text-left">Dados Pessoais</div>
+            <div className="text-center md:text-left">Moradia</div>
+            <div className="text-center md:text-left">Experiência</div>
             {pet.customQuestions && pet.customQuestions.length > 0 && (
-              <span>Perguntas</span>
+              <div className="text-center md:text-left">Perguntas</div>
             )}
-            <span>Confirmação</span>
+            <div className="text-center md:text-left">Confirmação</div>
           </div>
         </div>
 
